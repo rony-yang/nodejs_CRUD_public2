@@ -298,14 +298,7 @@ app.post('/register', async (req, res, err) => {
 
   // 신규가입
   const newMember = {
-    userID,
-    password: password_bcrypt,
-    name,
-    birth,
-    zipcode,
-    address,
-    number,
-    email,
+    userID, password: password_bcrypt, name, birth, zipcode, address, number, email
   };
 
   members.push(newMember);
@@ -426,7 +419,6 @@ app.post('/customer_detail', async (req, res) => {
 
   const customer = customerInfo.find((customer) => customer.No === check_No);
   if (customer) {
-	  console.log(customer);
     res.send(customer);
   } else {
     res.send('fail');
@@ -561,21 +553,29 @@ app.post('/customer_delete', async (req, res) => {
 
 // 날짜 필터로 검색하기
 app.post('/viewBtnSearch', async (req, res) => {
-  let beforeDate = req.body.beforeDate;
-  let afterDate = req.body.afterDate;
+  try {
+    const beforeDate = req.body.beforeDate;
+    const afterDate = req.body.afterDate;
+    const jsonData = await readDataFromJson();
 
-  const data = await readDataFromJson();
-  if (!data || !data.ledger) {
-    res.status(500).send('Error reading data from data.json');
-    return;
+    if (!jsonData || !jsonData.ledger) {
+      res.status(500).json({ error: 'Error reading data from data.json' });
+      return;
+    }
+
+    // 데이터 검색하기
+    const rows = jsonData.ledger.filter((entry) => {
+      const entryDate = new Date(entry.date).toISOString().slice(0, 10);
+      return entryDate >= beforeDate && entryDate <= afterDate;
+    });
+    // 날짜 오름차순 정렬
+    rows.sort((a, b) => new Date(a.date) - new Date(b.date));
+    res.json(rows);
+    
+  } catch (error) {
+    console.error('Error processing viewBtnSearch request:', error);
+    res.status(500).json({ error: 'Error processing request' });
   }
-
-  // 날짜로 검색
-  const rows = data.ledger.filter(
-    (record) => record.date >= beforeDate && record.date <= afterDate
-  );
-
-  res.json(rows);
 });
 
 /////////////////////////////////// 8. summarySheet.ejs 사용 종료 ///////////////////////////////////

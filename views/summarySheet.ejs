@@ -238,12 +238,12 @@
 										
 										// 마지막 월의 총계 출력
 										if (current_month !== '' && monthly_total_index < monthly_total.length) { %>
-										<tr class="row_sum">
-											<td></td>
-											<td><%= current_month %> 합계</td>
-											<td class="align_right"><%= number_format(monthly_total[monthly_total_index].total) %></td>
-										</tr>
-										<% monthly_total_index++;
+											<tr class="row_sum">
+												<td></td>
+												<td><%= current_month %> 합계</td>
+												<td class="align_right"><%= number_format(monthly_total[monthly_total_index].total) %></td>
+											</tr>
+											<% monthly_total_index++;
 											}
 										%>
 										
