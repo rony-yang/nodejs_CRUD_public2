@@ -1,19 +1,12 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "./views/index.ejs",
-      "use": "@vercel/node"
-    }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "./views/index.ejs",
+      "dest": "/views/index.ejs",
       "headers": {
         "cache-control": "s-maxage=1, stale-while-revalidate"
       }
