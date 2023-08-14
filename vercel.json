@@ -2,14 +2,5 @@
   "version": 2,
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/views/index.ejs",
-      "headers": {
-        "cache-control": "s-maxage=1, stale-while-revalidate"
-      }
-    }
   ]
 }
