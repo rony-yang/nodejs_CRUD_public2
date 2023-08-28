@@ -3,6 +3,10 @@
 
 /*
 
+<< nodeJS를 사용한 CRUD 구현 >>
+1. 개발 목표 : CRUD를 사용한 페이지 구현
+2. git : https://github.com/rony-yang/nodejs_CRUD_public
+
 	순서
 	
 	1. setting
