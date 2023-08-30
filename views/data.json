@@ -81,6 +81,16 @@
       "address": "경남 창원시 성산구 완암로 50 1층",
       "number": "010-1111-2222",
       "email": "abc@naver.com"
+    },
+    {
+      "userID": "aaa",
+      "password": "$2b$10$G4FCDqt6UNqDdiOKOeTWn.MU1r5o.BX5zHRNZDM4mVQS5ufC9u3tW",
+      "name": "홍길동",
+      "birth": "2023-08-01",
+      "zipcode": "51570",
+      "address": "경남 창원시 성산구 완암로 1 1층",
+      "number": "010-1111-2222",
+      "email": "aaa@gmail.com"
     }
   ],
   "ledger": [
