@@ -22,7 +22,7 @@
 
 /////////////////////////////////// 1. setting 시작 ///////////////////////////////////
 
-const PORT = 3500;
+const PORT = 5157;
 
 const express = require('express');
 const app = express();
