@@ -22,7 +22,7 @@ nodeJS 개인 프로젝트
   
 - DB : MySQL
   
-- IDE : groomIDE, HeidiSQL, Github
+- IDE : vs code, DBeaver, Github
 
 **6. 주요기능**
 
