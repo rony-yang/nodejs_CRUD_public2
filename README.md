@@ -8,7 +8,7 @@ nodeJS 개인 프로젝트
 
 ![11](https://github.com/rony-yang/nodejs_CRUD_public/assets/116271236/786cce32-9f99-416d-b2c0-de85936445fd)
 
-**3. URL 주소** : https://port-0-nodejs-crud-public2-4rqc2allxmw3ca.sel5.cloudtype.app/
+**3. URL 주소** : https://nodejs-portfolio-tibli.run.goorm.site/
 
 **4. 작업기간** : 2023. 6
 
