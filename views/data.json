@@ -169,5 +169,25 @@
       "date": "2023-05-08 00:00:00",
       "money": 34322
     }
+  ],
+  "board": [
+    {
+      "board_no": "1",
+      "board_title": "첫번째 공지사항입니다.",
+      "board_user": "관리자",
+      "board_date": "2024.1.1."
+    },
+    {
+      "board_no": "2",
+      "board_title": "테스트 페이지입니다.",
+      "board_user": "홍길동",
+      "board_date": "2024.2.22."
+    },
+    {
+      "board_no": "3",
+      "board_title": "카카오톡 알림톡 실시",
+      "board_user": "관리자",
+      "board_date": "2024.3.15."
+    }
   ]
 }

@@ -17,6 +17,7 @@
 	6. headnavbar.ejs 사용
 	7. customerInfo.ejs 사용
 	8. summarySheet.ejs 사용
+  9. board.ejs 사용
 
 */
 
@@ -242,6 +243,16 @@ app.get('/summarySheet', async (req, res) => {
 app.get('/lunchMenu', async (req, res) => {
 	res.render('lunchMenu');
 
+});
+
+// 게시판
+app.get('/board', async (req, res) => {
+	if (!req.session.user || req.session.user === undefined) {
+    res.render("board");
+  } else {
+    sessionID = req.session.user.id;
+    res.render('board', {sessionID: sessionID});
+  }	
 });
 
 /////////////////////////////////// 3. 페이지 렌더링 종료 ///////////////////////////////////
@@ -583,3 +594,29 @@ app.post('/viewBtnSearch', async (req, res) => {
 });
 
 /////////////////////////////////// 8. summarySheet.ejs 사용 종료 ///////////////////////////////////
+
+/////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
+
+// 글 가져오기
+app.post('/board_get', async (req, res) => {
+  try {
+    const data = await readDataFromJson(); // 비동기로 데이터 로딩
+    if (!data || !data.board) {
+      res.status(500).json({ error: 'Error reading data from data.json' });
+      return;
+    }
+    const board = data.board;
+    res.json(board);
+  } catch (error) {
+    console.error('Error processing board_get:', error);
+    res.status(500).json({ error: 'Error processing board_get' });
+  }
+});
+
+// 상세페이지 이동
+app.get('/board_detailed_page', function(req, res) {
+  var board_no = req.query.board_no;
+  res.render('board_detailed_page', { board_no: board_no });
+});
+
+/////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
