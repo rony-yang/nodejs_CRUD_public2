@@ -1,16 +1,155 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detailed Page</title>
-</head>
-<body>
-    <h1>Detailed Page</h1>
-    <div>
-        <h2>Details of Bulletin Board Post <%= board_no %></h2>
-        <!-- Render detailed information about the bulletin board post -->
-        <!-- You can use JavaScript or EJS syntax to access and display data -->
-    </div>
-</body>
+<!DOCTYPE HTML>
+<!--
+	Stellar by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+
+<html>
+	<head>
+		<title>게시판</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="css/main.css" />
+		<script src="js/main_contents.js"></script>
+		
+		<!-- 부트스트랩 사용 JavaScript 와 CSS -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+		<!-- jQuery 사용 -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+		<!-- 날짜 및 시간 처리를 쉽게 하기 위한 JavaScript 라이브러리 -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+		<!-- dataTable 사용 위한 JavaScript 와 CSS -->
+		<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+		<!-- DataTables 확장 플러그인 JavaScript 와 CSS -->
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css"/>
+		<script type="text/javascript" src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+		
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous">
+
+		<style>
+		@font-face {
+			font-family: 'SUITE-Regular';
+			src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/SUITE-Regular.woff2') format('woff2');
+			font-weight: 400;
+			font-style: normal;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+			font-family: 'SUITE-Regular', Arial, sans-serif;
+		}
+
+		body {
+			font-family: 'SUITE-Regular', Arial, sans-serif;
+		}	
+
+		.register_head_style {
+			font-weight: bold;
+		}
+
+    /* 제목 하이퍼링크 디자인 없애기 */
+    .board_title_style {
+      text-decoration: none; 
+      color: inherit;
+      cursor: pointer; 
+    }
+
+		.page-item.active .page-link {
+			/* z-index: 3; */
+			color: #000000; 
+			background-color: #cdb1cb;
+			border-color: #fff;
+		}
+
+		.dataTables_wrapper .dataTables_paginate .paginate_button {
+			padding: 0em 0em;
+		}
+			
+		.dataTables_wrapper:hover .dataTables_paginate:hover .paginate_button:hover {
+			border-color: #fff;
+		}
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+			border: 1px solid #b992b7;
+			background: #b992b7;
+		}	
+			
+		.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+			border: 1px solid #b992b7;
+			background: #b992b7;
+		}
+			
+		.dataTables_wrapper .dataTables_paginate .paginate_button {
+			background: #e1d0e0;
+			color: #000000;	
+		}
+			
+		.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+			background: #e1d0e0;
+			color: #000000;	
+		}	
+
+		</style>
+		
+		<%-include('common/headnavbar.ejs')%>
+
+
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<hr>
+						<h1 class="register_head_style">게시판</h1>
+						<br>
+					</header>
+
+				<!-- Main -->
+        <div id="main">
+
+        <section class="main special">
+                                        
+            <!-- <header class="major">
+                <h3 class="register_head_style">제목</h3>
+            </header> -->
+            
+            <body>
+                <!-- let board_no = req.query.board_no;
+                let  = req.query.;
+                let  = req.query.board_user;
+                let  = req.query.board_date; -->
+                <div class="register_form_style">
+                    <div class="register_name_style">
+                        제목
+                    </div>
+                    <div class="register_input_style" style="width: 60%;">
+                        <%= board_no %>
+                        <%= board_title %>
+                        <%= board_user %>
+                        <%= board_date %>
+                    </div>
+                </div>
+
+
+
+            </body>
+            
+        </section>
+
+
+
+        </div>
+
+			<%-include('common/footer.ejs')%>
+
+			</div>
+
+
+	</body>
+
 </html>

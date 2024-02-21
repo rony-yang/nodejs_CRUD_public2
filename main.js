@@ -613,10 +613,17 @@ app.post('/board_get', async (req, res) => {
   }
 });
 
-// 상세페이지 이동
+// 상세페이지 이동 : 예) board_detailed_page?board_no=1
 app.get('/board_detailed_page', function(req, res) {
-  var board_no = req.query.board_no;
-  res.render('board_detailed_page', { board_no: board_no });
+  let board_no = req.query.board_no;
+  let board_title = req.query.board_title;
+  let board_user = req.query.board_user;
+  let board_date = req.query.board_date;
+  console.log(board_no);
+  console.log(board_title);
+  console.log(board_user);
+  console.log(board_date);
+  res.render('board_detailed_page', { board_no:board_no, board_title:board_title, board_user:board_user, board_date:board_date });
 });
 
 /////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
