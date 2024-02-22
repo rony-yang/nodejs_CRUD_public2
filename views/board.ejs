@@ -150,20 +150,16 @@
         dataType: "json",
         success: function(result) {
           $('#board_dataTable').DataTable({
-            data			: result, 			// 데이터값
-            responsive		: true, 			// 반응형 설정
+            data			    : result, 			    // 데이터값
+            responsive		: true, 			      // 반응형 설정
             lengthMenu		: [ 2, 3, 5, 10 ],	// 표시 건수 단위
-            displayLength	: 2, 				// 표시 건수 설정
-            // stateSave		: true, 			// 현재 상태 보존
-            scrollX			: true, 			// 가로스크롤
+            displayLength	: 2, 				        // 표시 건수 설정
+            // stateSave		: true, 			    // 현재 상태 보존
+            scrollX		  	: true, 			      // 가로스크롤
             columnDefs: [
                           { targets: '_all', className: "text-center" }, 
                           { targets: 0, width: "10%" }, // 각 칼럼의 넓이 지정해주기
-                          { targets: 1, width: "50%",
-                            render: function(data, type, row, meta) {
-                              return '<a href="#" class="board_title_style">' + data + '</a>'; // 제목을 클릭하면 세부 페이지로 이동
-                            } 
-                          },
+                          { targets: 1, width: "50%" },
                           { targets: 2, width: "20%" },
                           { targets: 3, width: "20%" } 
                         ],
@@ -189,19 +185,18 @@
                       }
             }
           }); //--DataTable
-          $('#board_dataTable').on('click', '.board_title_style', function(e) {
-              e.preventDefault();
-              var data = $('#board_dataTable').DataTable().row($(this).closest('tr')).data();
-              window.location.href = '/board_detailed_page?board_no=' + data.board_no; // 제목 누르면 세부페이지로 이동
+          // 제목 누르면 세부 페이지로 이동
+          $('#board_dataTable tbody').on('click', 'tr', function() {
+            var data = $('#board_dataTable').DataTable().row(this).data();
+            window.location.href = '/board_detailed_page?board_no=' + data.board_no;
           });
-
         }, //--success
         error: function(jqXHR, textStatus, errorThrown) {
           console.error('dataTable 로딩 에러 :: ' + textStatus, errorThrown);
         }
       }); //--ajax
     }; //--view_dataTable
-      
+
   </script>
 
 </html>

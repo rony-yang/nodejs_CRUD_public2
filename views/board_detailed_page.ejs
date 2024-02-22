@@ -48,48 +48,26 @@
 		.register_head_style {
 			font-weight: bold;
 		}
-
-    /* 제목 하이퍼링크 디자인 없애기 */
-    .board_title_style {
-      text-decoration: none; 
-      color: inherit;
-      cursor: pointer; 
-    }
-
-		.page-item.active .page-link {
-			/* z-index: 3; */
-			color: #000000; 
-			background-color: #cdb1cb;
-			border-color: #fff;
-		}
-
-		.dataTables_wrapper .dataTables_paginate .paginate_button {
-			padding: 0em 0em;
+		.register_form_style {
+			display: inline-flex;
+			justify-content: flex-start;
+			align-items: baseline;
+			width: 100%;
+			position: relative;
+			text-align: center;
+			margin-bottom: 1rem;
 		}
 			
-		.dataTables_wrapper:hover .dataTables_paginate:hover .paginate_button:hover {
-			border-color: #fff;
+		.register_name_style {
+			font-size: 1.1rem;
+			color: #636363;
+			font-weight: bold;
+			width: 20%;
 		}
-
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-			border: 1px solid #b992b7;
-			background: #b992b7;
-		}	
-			
-		.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-			border: 1px solid #b992b7;
-			background: #b992b7;
+		.register_input_style {
+			width: 80%;
+			display: inline-block;
 		}
-			
-		.dataTables_wrapper .dataTables_paginate .paginate_button {
-			background: #e1d0e0;
-			color: #000000;	
-		}
-			
-		.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-			background: #e1d0e0;
-			color: #000000;	
-		}	
 
 		</style>
 		
@@ -119,23 +97,56 @@
             </header> -->
             
             <body>
-                <!-- let board_no = req.query.board_no;
-                let  = req.query.;
-                let  = req.query.board_user;
-                let  = req.query.board_date; -->
-                <div class="register_form_style">
-                    <div class="register_name_style">
-                        제목
-                    </div>
-                    <div class="register_input_style" style="width: 60%;">
-                        <%= board_no %>
-                        <%= board_title %>
-                        <%= board_user %>
-                        <%= board_date %>
-                    </div>
-                </div>
 
 
+
+							<div style="display: flex; width: 100%;">
+								<div class="register_form_style" style="width: 20%;">
+									<div class="register_name_style" style="width: 50%;">
+										글 번호
+									</div>
+									<div class="register_input_style" style="width: 50%;">
+										<input type="text" class="form-control form-control-xl" id="board_no" readonly>
+									</div>
+								</div>
+
+								<div class="register_form_style" style="width: 40%; margin-left: 50px;">
+									<div class="register_name_style">
+										작성자
+									</div>
+									<div class="register_input_style">
+										<input type="text" class="form-control form-control-xl" id="board_user" readonly>
+									</div>
+								</div>
+	
+								<div class="register_form_style" style="width: 40%; margin-left: 50px;">
+									<div class="register_name_style">
+										작성일
+									</div>
+									<div class="register_input_style">
+										<input type="text" class="form-control form-control-xl" id="board_date" readonly>
+									</div>
+								</div>
+							</div>
+
+<hr>
+							<div class="register_form_style">
+								<div class="register_name_style">
+									제목
+								</div>
+								<div class="register_input_style">
+									<th><textarea class="form-control input-style" id="board_title" readonly style="height: 30px;"></textarea></th>
+								</div>
+							</div>
+
+							<div class="register_form_style">
+								<div class="register_name_style">
+									내용
+								</div>
+								<div class="register_input_style">
+									<th><textarea class="form-control input-style" id="board_contents" readonly style="height: 300px;"></textarea></th>
+								</div>
+							</div>
 
             </body>
             
@@ -151,5 +162,19 @@
 
 
 	</body>
+<script>
+	$(document).ready(function() {
+		let board_no = "<%= board_no %>";
+		let board_title = "<%= board_title %>";
+		let board_user = "<%= board_user %>";
+		let board_date = "<%= board_date %>";
+		let board_contents = "<%= board_contents %>";
 
+		$('#board_no').val(board_no);
+		$('#board_title').val(board_title);
+		$('#board_user').val(board_user);
+		$('#board_date').val(board_date);
+		$('#board_contents').val(board_contents);
+	});
+</script>
 </html>

@@ -71,16 +71,12 @@ INSERT INTO members (No, userID, password, name, birth, zipcode, address, number
 (4, 'aaa', '$2b$10$G4FCDqt6UNqDdiOKOeTWn.MU1r5o.BX5zHRNZDM4mVQS5ufC9u3tW', '홍길동', '2023-08-01', '51570', '경남 창원시 성산구 완암로 50 1층', '010-1111-2222', 'aaa@gmail.com');
 
 
--- nodejs_CRUD.board definition
+-- nodejs_crud.board definition
 CREATE TABLE `board` (
   `board_no` int(50) NOT NULL AUTO_INCREMENT COMMENT '번호',
   `board_title` varchar(100) DEFAULT NULL COMMENT '제목',
   `board_user` varchar(100) DEFAULT NULL COMMENT '사용자',
   `board_date` date DEFAULT NULL COMMENT '작성일',
+  `board_contents` varchar(5000) DEFAULT NULL COMMENT '내용',
   PRIMARY KEY (`board_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO board (board_no, board_title, board_user, board_date) VALUES
-('1', '첫번째 공지사항입니다.', '관리자', '2024-01-01 00:00:00'),
-('2', '테스트 페이지입니다.', '홍길동', '2024-02-01 00:00:00'),
-('3', '카카오톡 알림톡 실시', '관리자', '2024-03-01 00:00:00');
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;

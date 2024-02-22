@@ -125,14 +125,15 @@ app.get("/", async (req, res) => {
     }
 });
 
-app.get("/common/headernavbar", async (req, res) => {
-	if (!req.session.user || req.session.user == undefined) {
-        res.render('/common/headernavbar');
-    } else {
-        sessionID = req.session.user.id;
-        res.render('/common/headernavbar', {sessionID: sessionID});
-    }
+// 메뉴
+app.get('/lunchMenu', async (req, res) => {
+	res.render('lunchMenu');
+
 });
+
+/////////////////////////////////// 3. 페이지 렌더링 종료 ///////////////////////////////////
+
+/////////////////////////////////// 4. register.ejs 사용 시작 ///////////////////////////////////
 
 // 회원가입
 app.get('/register', async (req, res) => {
@@ -143,73 +144,6 @@ app.get('/register', async (req, res) => {
         res.render('register', {sessionID: sessionID});
     }	
 });
-
-// 거래처정보
-app.get('/customerInfo', async (req, res) => {
-	let rows = await asyncQuery(`SELECT * 
-								 FROM nodejs_crud.customerInfo
-								`);
-
-	if (!req.session.user || req.session.user === undefined) {
-        res.render('customerInfo', {rows: rows});
-    } else {
-        sessionID = req.session.user.id;
-        res.render('customerInfo', {rows: rows, sessionID: sessionID});
-    }
-});
-
-// 집계표
-app.get('/summarySheet', async (req, res) => {
-	var today = new Date().toISOString().slice(0, 10);
-	// 한달 전 날짜 계산
-	var oneMonthAgo = new Date();
-	oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-	var oneMonthAgoStr = oneMonthAgo.toISOString().slice(0, 10);
-
-	let rows = await asyncQuery(`
-								SELECT id, 
-									   date, 
-									   money 
-								FROM nodejs_crud.ledger 
-								WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
-								ORDER BY date
-								`);
-	let monthly_total = await asyncQuery(`
-										SELECT MONTH(date) AS month, 
-											   SUM(money) AS total
-										FROM nodejs_crud.ledger
-										WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
-										GROUP BY month
-										ORDER BY MIN(date)
-	`);
-	
-	if (!req.session.user || req.session.user === undefined) {
-        res.render('summarySheet', { rows: rows, monthly_total: monthly_total, today : today, oneMonthAgoStr : oneMonthAgoStr});
-    } else {
-        sessionID = req.session.user.id;
-        res.render('summarySheet', { rows: rows, monthly_total: monthly_total, sessionID: sessionID, today : today, oneMonthAgoStr : oneMonthAgoStr});
-    }
-});
-
-// 메뉴
-app.get('/lunchMenu', async (req, res) => {
-	res.render('lunchMenu');
-
-});
-
-// 게시판
-app.get('/board', async (req, res) => {
-	if (!req.session.user || req.session.user === undefined) {
-    res.render("board");
-  } else {
-    sessionID = req.session.user.id;
-    res.render('board', {sessionID: sessionID});
-  }	
-});
-
-/////////////////////////////////// 3. 페이지 렌더링 종료 ///////////////////////////////////
-
-/////////////////////////////////// 4. register.ejs 사용 시작 ///////////////////////////////////
 
 // 회원가입 시 아이디 중복확인
 app.post("/id_duplicate", async (req, res, err) => {
@@ -231,15 +165,15 @@ app.post('/register', async (req, res, err) => {
 	// 비밀번호 암호화
     let saltRounds = 10; // salt가 높을 수록 암호화가 강력해지지만 속도가 느려진다
 
-	let userID 			= req.body.userID;
-	// let password 	= req.body.password;
+	let userID 			    = req.body.userID;
+	// let password 	  = req.body.password;
 	let password_bcrypt = bcrypt.hashSync(req.body.password, saltRounds);
-	let name 			= req.body.name;
-	let birth 			= req.body.birth;
-	let zipcode			= req.body.zipcode;
-	let address			= req.body.address;
-	let number 			= req.body.number;
-	let email 			= req.body.email;
+	let name 			      = req.body.name;
+	let birth 			    = req.body.birth;
+	let zipcode		    	= req.body.zipcode;
+	let address		    	= req.body.address;
+	let number 		    	= req.body.number;
+	let email 		    	= req.body.email;
 	
 	let rows = await asyncQuery(`INSERT INTO nodejs_crud.members 
 									(
@@ -318,6 +252,15 @@ app.post("/loginaction", async (req, res, err) => {
 
 /////////////////////////////////// 6. headnavbar.ejs 사용 시작 ///////////////////////////////////
 
+app.get("/common/headernavbar", async (req, res) => {
+	if (!req.session.user || req.session.user == undefined) {
+        res.render('/common/headernavbar');
+    } else {
+        sessionID = req.session.user.id;
+        res.render('/common/headernavbar', {sessionID: sessionID});
+    }
+});
+
 // 로그아웃
 app.post("/logoutaction", async (req, res, err) => {
 
@@ -344,6 +287,20 @@ app.post("/logoutaction", async (req, res, err) => {
 
 /////////////////////////////////// 7. customerInfo.ejs 사용 시작 ///////////////////////////////////
 
+// 거래처정보
+app.get('/customerInfo', async (req, res) => {
+	let rows = await asyncQuery(`SELECT * 
+								 FROM nodejs_crud.customerInfo
+								`);
+
+	if (!req.session.user || req.session.user === undefined) {
+        res.render('customerInfo', {rows: rows});
+    } else {
+        sessionID = req.session.user.id;
+        res.render('customerInfo', {rows: rows, sessionID: sessionID});
+    }
+});
+
 // 거래처정보 테이블
 app.post('/customerInfo_get', async (req, res) => {
   let rows = await asyncQuery(`SELECT * 
@@ -368,19 +325,19 @@ app.post('/customer_detail', async (req, res) => {
 
 // 신규등록
 app.post('/customer_add', async (req, res) => {
-let registrationNum 			= req.body.registrationNum;
-let name 						= req.body.name;
-let representative				= req.body.representative;
-let date						= req.body.date;
+let registrationNum 		    	= req.body.registrationNum;
+let name 					          	= req.body.name;
+let representative				    = req.body.representative;
+let date						          = req.body.date;
 let corporateRegistrationNum 	= req.body.corporateRegistrationNum;
-let location					= req.body.location;
-let locationOfHeadOffice		= req.body.locationOfHeadOffice;
-let typeOfBusiness				= req.body.typeOfBusiness;
-let item						= req.body.item;
-let email						= req.body.email;
-let callNum						= req.body.callNum;
-let personInCharge				= req.body.personInCharge;
-let memo						= req.body.memo;
+let location					        = req.body.location;
+let locationOfHeadOffice	  	= req.body.locationOfHeadOffice;
+let typeOfBusiness			    	= req.body.typeOfBusiness;
+let item					          	= req.body.item;
+let email					          	= req.body.email;
+let callNum					        	= req.body.callNum;
+let personInCharge		    		= req.body.personInCharge;
+let memo						          = req.body.memo;
 
   let rows = await asyncQuery(`INSERT INTO nodejs_crud.customerInfo 
                 (
@@ -424,20 +381,20 @@ if (rows.affectedRows != 0 && rows.errno == undefined) {
 
 // 거래처정보 수정하기
 app.post("/customer_modify", async (req, res) => {
-let registrationNum 			= req.body.registrationNum;
-let name 						= req.body.name;
-let representative				= req.body.representative;
-let date						= req.body.date;
+let registrationNum 		    	= req.body.registrationNum;
+let name 						          = req.body.name;
+let representative				    = req.body.representative;
+let date						          = req.body.date;
 let corporateRegistrationNum 	= req.body.corporateRegistrationNum;
-let location					= req.body.location;
-let locationOfHeadOffice		= req.body.locationOfHeadOffice;
-let typeOfBusiness				= req.body.typeOfBusiness;
-let item						= req.body.item;
-let email						= req.body.email;
-let callNum						= req.body.callNum;
-let personInCharge				= req.body.personInCharge;
-let memo						= req.body.memo;
-let No							= req.body.No;
+let location				         	= req.body.location;
+let locationOfHeadOffice		  = req.body.locationOfHeadOffice;
+let typeOfBusiness				    = req.body.typeOfBusiness;
+let item						          = req.body.item;
+let email					          	= req.body.email;
+let callNum					        	= req.body.callNum;
+let personInCharge	    			= req.body.personInCharge;
+let memo					          	= req.body.memo;
+let No						          	= req.body.No;
 
 let rows = await asyncQuery(`UPDATE nodejs_crud.customerInfo 
               SET registrationNum = '${registrationNum}',
@@ -486,6 +443,39 @@ if (rows.affectedRows != 0 && rows.errno == undefined) {
 
 /////////////////////////////////// 8. summarySheet.ejs 사용 ///////////////////////////////////
 
+// 집계표
+app.get('/summarySheet', async (req, res) => {
+	var today = new Date().toISOString().slice(0, 10);
+	// 한달 전 날짜 계산
+	var oneMonthAgo = new Date();
+	oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+	var oneMonthAgoStr = oneMonthAgo.toISOString().slice(0, 10);
+
+	let rows = await asyncQuery(`
+								SELECT id, 
+									   date, 
+									   money 
+								FROM nodejs_crud.ledger 
+								WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
+								ORDER BY date
+								`);
+	let monthly_total = await asyncQuery(`
+										SELECT MONTH(date) AS month, 
+											   SUM(money) AS total
+										FROM nodejs_crud.ledger
+										WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
+										GROUP BY month
+										ORDER BY MIN(date)
+	`);
+	
+	if (!req.session.user || req.session.user === undefined) {
+        res.render('summarySheet', { rows: rows, monthly_total: monthly_total, today : today, oneMonthAgoStr : oneMonthAgoStr});
+    } else {
+        sessionID = req.session.user.id;
+        res.render('summarySheet', { rows: rows, monthly_total: monthly_total, sessionID: sessionID, today : today, oneMonthAgoStr : oneMonthAgoStr});
+    }
+});
+
 // 날짜 필터로 검색하기
 app.post('/viewBtnSearch', async (req, res) => {
 	let beforeDate = req.body.beforeDate;
@@ -504,40 +494,42 @@ app.post('/viewBtnSearch', async (req, res) => {
 
 /////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
 
-// 글 가져오기
+// 게시판
+app.get('/board', async (req, res) => {
+	if (!req.session.user || req.session.user === undefined) {
+    res.render('board');
+  } else {
+    sessionID = req.session.user.id;
+    res.render('board', {sessionID: sessionID});
+  }	
+});
+
+// 거래처정보 테이블
 app.post('/board_get', async (req, res) => {
-  try {
-    const data = await readDataFromJson(); // 비동기로 데이터 로딩
-    if (!data || !data.board) {
-      res.status(500).json({ error: 'Error reading data from data.json' });
-      return;
-    }
-    const board = data.board;
-    res.json(board);
-  } catch (error) {
-    console.error('Error processing board_get:', error);
-    res.status(500).json({ error: 'Error processing board_get' });
-  }
+  let rows = await asyncQuery(`SELECT * 
+               FROM nodejs_crud.board
+              `);
+  res.json(rows);
 });
 
 // 상세페이지 이동 : 예) board_detailed_page?board_no=1
-app.get('/board_detailed_page', function(req, res) {
+app.get('/board_detailed_page', async function(req, res) {
   let board_no = req.query.board_no;
-  let board_title = req.query.board_title;
-  let board_user = req.query.board_user;
-  let board_date = req.query.board_date;
-  console.log(board_no);
-  console.log(board_title);
-  console.log(board_user);
-  console.log(board_date);
-  res.render('board_detailed_page', { board_no:board_no, board_title:board_title, board_user:board_user, board_date:board_date });
+
+  let rows = await asyncQuery(`SELECT * FROM nodejs_crud.board 
+                                WHERE board_no = '${board_no}'`);
+  if (rows.length > 0) {
+    let board_title = rows[0].board_title;
+    let board_user  = rows[0].board_user;
+    let board_date  = rows[0].board_date;
+    let board_contents  = rows[0].board_contents;
+    res.render('board_detailed_page', { board_no: board_no, board_title: board_title, board_user: board_user, board_date: board_date, board_contents:board_contents });
+  } else {
+    res.status(404).send("페이지를 찾을 수 없습니다.");
+  }
 });
 
 /////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
-
-
-
-
 
 
 
@@ -945,6 +937,20 @@ app.post('/viewBtnSearch', async (req, res) => {
   }
 });
 
-
+// 게시판
+app.post('/board_get', async (req, res) => {
+  try {
+    const data = await readDataFromJson(); // 비동기로 데이터 로딩
+    if (!data || !data.board) {
+      res.status(500).json({ error: 'Error reading data from data.json' });
+      return;
+    }
+    const board = data.board;
+    res.json(board);
+  } catch (error) {
+    console.error('Error processing board_get:', error);
+    res.status(500).json({ error: 'Error processing board_get' });
+  }
+});
 
 */
