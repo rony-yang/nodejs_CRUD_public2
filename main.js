@@ -75,54 +75,20 @@ app.use(session({
     // })
 }));
 
-// data.json 파일 읽기 위해 사용
-const fs = require('fs');
-
-// 비동기적으로 파일 읽기
-async function readDataFromJson() {
-  try {
-    const data = await fs.promises.readFile('views/data.json', 'utf8');
-    const jsonData = JSON.parse(data);
-    return jsonData;
-  } catch (error) {
-    console.error('data.json에서 데이터를 읽는 중 오류 발생:', error);
-    return null;
-  }
-}
-
 /////////////////////////////////// 1. setting 종료 ///////////////////////////////////
 
 /////////////////////////////////// 2. DB 시작 ///////////////////////////////////
 
 const mysql2 = require("mysql2/promise");
-// const { pool } = require('./password.js');
-
-async function _getPool() {
-  try {
-    const jsonData = readDataFromJson();
-    const pool = mysql2.createPool({
-      host: jsonData.host,
-      user: jsonData.user,
-      password: jsonData.password,
-      database: jsonData.database
-    });
-    return pool;
-  } catch (error) {
-    console.error('연결 풀을 생성하는 중 오류 발생:', error);
-    return null;
-  }
-}
-
+const { pool } = require('./password.js');
 
 async function _getConn() {
-  try {
-    const pool = await _getPool();
-    const connection = await pool.getConnection();
-    return connection;
-  } catch (error) {
-    console.error('연결 객체를 가져오는 중 오류 발생:', error);
-    return null;
-  }
+	try {
+		const connection = await pool.getConnection();
+		return connection;
+	} catch (error) {
+		console.error(error);
+	}
 }
 
 async function asyncQuery(sql, params = []) {
@@ -179,6 +145,450 @@ app.get('/register', async (req, res) => {
 });
 
 // 거래처정보
+app.get('/customerInfo', async (req, res) => {
+	let rows = await asyncQuery(`SELECT * 
+								 FROM nodejs_crud.customerInfo
+								`);
+
+	if (!req.session.user || req.session.user === undefined) {
+        res.render('customerInfo', {rows: rows});
+    } else {
+        sessionID = req.session.user.id;
+        res.render('customerInfo', {rows: rows, sessionID: sessionID});
+    }
+});
+
+// 집계표
+app.get('/summarySheet', async (req, res) => {
+	var today = new Date().toISOString().slice(0, 10);
+	// 한달 전 날짜 계산
+	var oneMonthAgo = new Date();
+	oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+	var oneMonthAgoStr = oneMonthAgo.toISOString().slice(0, 10);
+
+	let rows = await asyncQuery(`
+								SELECT id, 
+									   date, 
+									   money 
+								FROM nodejs_crud.ledger 
+								WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
+								ORDER BY date
+								`);
+	let monthly_total = await asyncQuery(`
+										SELECT MONTH(date) AS month, 
+											   SUM(money) AS total
+										FROM nodejs_crud.ledger
+										WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
+										GROUP BY month
+										ORDER BY MIN(date)
+	`);
+	
+	if (!req.session.user || req.session.user === undefined) {
+        res.render('summarySheet', { rows: rows, monthly_total: monthly_total, today : today, oneMonthAgoStr : oneMonthAgoStr});
+    } else {
+        sessionID = req.session.user.id;
+        res.render('summarySheet', { rows: rows, monthly_total: monthly_total, sessionID: sessionID, today : today, oneMonthAgoStr : oneMonthAgoStr});
+    }
+});
+
+// 메뉴
+app.get('/lunchMenu', async (req, res) => {
+	res.render('lunchMenu');
+
+});
+
+// 게시판
+app.get('/board', async (req, res) => {
+	if (!req.session.user || req.session.user === undefined) {
+    res.render("board");
+  } else {
+    sessionID = req.session.user.id;
+    res.render('board', {sessionID: sessionID});
+  }	
+});
+
+/////////////////////////////////// 3. 페이지 렌더링 종료 ///////////////////////////////////
+
+/////////////////////////////////// 4. register.ejs 사용 시작 ///////////////////////////////////
+
+// 회원가입 시 아이디 중복확인
+app.post("/id_duplicate", async (req, res, err) => {
+  let userID = req.body.userID
+  let rows = await asyncQuery(`SELECT * 
+               FROM nodejs_crud.members 
+               WHERE userID='${userID}'
+              `);
+  if (rows != '') {
+      res.send("fail");
+  } else {
+      res.send("ok");
+  }
+});
+
+// 회원 가입
+app.post('/register', async (req, res, err) => {
+	
+	// 비밀번호 암호화
+    let saltRounds = 10; // salt가 높을 수록 암호화가 강력해지지만 속도가 느려진다
+
+	let userID 			= req.body.userID;
+	// let password 	= req.body.password;
+	let password_bcrypt = bcrypt.hashSync(req.body.password, saltRounds);
+	let name 			= req.body.name;
+	let birth 			= req.body.birth;
+	let zipcode			= req.body.zipcode;
+	let address			= req.body.address;
+	let number 			= req.body.number;
+	let email 			= req.body.email;
+	
+	let rows = await asyncQuery(`INSERT INTO nodejs_crud.members 
+									(
+										userID, 
+										password, 
+										name, 
+										birth,
+										zipcode,
+										address, 
+										number, 
+										email
+									)
+										VALUES (?,?,?,?,?,?,?,?)`, 
+									[
+										userID,
+										password_bcrypt,
+										name,
+										birth,
+										zipcode,
+										address,
+										number,
+										email
+									]);
+
+	if (rows.affectedRows != 0 && rows.errno == undefined) {
+	  res.send('ok');
+	  console.log("회원가입 완료");
+	} else {
+	  res.send('fail');
+	  console.log("회원가입 실패");
+	}
+});
+
+/////////////////////////////////// 4. register.ejs 사용 종료 ///////////////////////////////////
+
+/////////////////////////////////// 5. login.ejs 사용 시작 ///////////////////////////////////
+
+// 로그인
+app.post("/loginaction", async (req, res, err) => {
+  let userIP		= requestIp.getClientIp(req);
+  let userID		= req.body.userID;
+  let password	= req.body.password;
+
+  let rows = await asyncQuery(`SELECT * 
+               FROM nodejs_crud.members 
+               WHERE userID = '${userID}'
+              `);
+  // 값이 존재하지 않을 경우
+  if (rows == null || rows == undefined || rows == '') {
+      res.end("fail");
+  // 값이 존재할 경우
+} else {
+  let hashed = rows[0].password; // 암호화된 비밀번호 출력
+  let check_password = bcrypt.compareSync(password, hashed); // true, false로 출력
+
+  // 비밀번호가 일치할때
+  if (check_password == true) {
+    console.log("ID : " + userID + " - 로그인 성공");
+
+    // 아이디, 비번 체크
+    req.session.user = {
+      id: userID
+    };
+
+    req.session.save(function() {
+      res.send("ok");
+    });
+  // 비밀번호가 틀렸을때
+  } else {
+    res.send("fail");
+  }
+}
+});
+
+/////////////////////////////////// 5. login.ejs 사용 종료 ///////////////////////////////////
+
+/////////////////////////////////// 6. headnavbar.ejs 사용 시작 ///////////////////////////////////
+
+// 로그아웃
+app.post("/logoutaction", async (req, res, err) => {
+
+    sessionID = req.body.sessionID;
+	// 로그인 여부 확인
+    if (req.session.user) {
+        req.session.destroy(
+            function(err) {
+                if (err) {
+					console.log('로그아웃 실패');
+                    res.send("error");
+                } else {
+					console.log('로그아웃 성공');
+                	res.send("ok");
+				}   
+            })
+    } else {
+        console.log('로그인 되어 있지 않습니다.');
+        res.send("fail");
+    }
+});
+
+/////////////////////////////////// 6. headnavbar.ejs 사용 종료 ///////////////////////////////////
+
+/////////////////////////////////// 7. customerInfo.ejs 사용 시작 ///////////////////////////////////
+
+// 거래처정보 테이블
+app.post('/customerInfo_get', async (req, res) => {
+  let rows = await asyncQuery(`SELECT * 
+               FROM nodejs_crud.customerInfo
+              `);
+res.json(rows);
+});
+
+// 정보 상세보기
+app.post('/customer_detail', async (req, res) => {
+  let check_No = req.body.No;
+  let rows = await asyncQuery(`SELECT * 
+               FROM nodejs_crud.customerInfo 
+               WHERE No = '${check_No}'
+              `);
+  if (rows.affectedRows != 0 && rows.errno == undefined) {
+  res.send(rows);
+} else {
+  res.send('fail');
+}
+});
+
+// 신규등록
+app.post('/customer_add', async (req, res) => {
+let registrationNum 			= req.body.registrationNum;
+let name 						= req.body.name;
+let representative				= req.body.representative;
+let date						= req.body.date;
+let corporateRegistrationNum 	= req.body.corporateRegistrationNum;
+let location					= req.body.location;
+let locationOfHeadOffice		= req.body.locationOfHeadOffice;
+let typeOfBusiness				= req.body.typeOfBusiness;
+let item						= req.body.item;
+let email						= req.body.email;
+let callNum						= req.body.callNum;
+let personInCharge				= req.body.personInCharge;
+let memo						= req.body.memo;
+
+  let rows = await asyncQuery(`INSERT INTO nodejs_crud.customerInfo 
+                (
+                 registrationNum, 
+                 name,
+                 representative,
+                 date,
+                 corporateRegistrationNum,
+                 location,
+                 locationOfHeadOffice,
+                 typeOfBusiness,
+                 item,
+                 email,
+                 callNum,
+                 personInCharge,
+                 memo
+                 )
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,[
+                 registrationNum, 
+                 name,
+                 representative,
+                 date,
+                 corporateRegistrationNum,
+                 location,
+                 locationOfHeadOffice,
+                 typeOfBusiness,
+                 item,
+                 email,
+                 callNum,
+                 personInCharge,
+                 memo
+              ]);
+if (rows.affectedRows != 0 && rows.errno == undefined) {
+  res.send('ok');
+  console.log("거래처 정보 등록완료");
+} else {
+  res.send('fail');
+  console.log("거래처 정보 등록 실패");
+}
+});
+
+// 거래처정보 수정하기
+app.post("/customer_modify", async (req, res) => {
+let registrationNum 			= req.body.registrationNum;
+let name 						= req.body.name;
+let representative				= req.body.representative;
+let date						= req.body.date;
+let corporateRegistrationNum 	= req.body.corporateRegistrationNum;
+let location					= req.body.location;
+let locationOfHeadOffice		= req.body.locationOfHeadOffice;
+let typeOfBusiness				= req.body.typeOfBusiness;
+let item						= req.body.item;
+let email						= req.body.email;
+let callNum						= req.body.callNum;
+let personInCharge				= req.body.personInCharge;
+let memo						= req.body.memo;
+let No							= req.body.No;
+
+let rows = await asyncQuery(`UPDATE nodejs_crud.customerInfo 
+              SET registrationNum = '${registrationNum}',
+                name = '${name}',
+                representative = '${representative}',
+                date = '${date}',
+                corporateRegistrationNum = '${corporateRegistrationNum}',
+                location = '${location}',
+                locationOfHeadOffice = '${locationOfHeadOffice}',
+                typeOfBusiness = '${typeOfBusiness}',
+                item = '${item}',
+                email = '${email}',
+                callNum = '${callNum}',
+                personInCharge = '${personInCharge}',
+                memo = '${memo}'
+                WHERE no ='${No}'
+              `);
+
+if (rows.affectedRows != 0 && rows.errno == undefined) {
+  res.send('ok');
+  console.log(No + "번 정보 수정완료");
+} else {
+  res.send('fail');
+  console.log("거래처 정보 수정 실패");
+}
+});
+
+// 체크항목 다중 삭제하기
+app.post('/customer_delete', async (req, res) => {
+let check_No = JSON.parse(req.body.No);
+let rows = await asyncQuery(`DELETE FROM nodejs_crud.customerInfo
+               WHERE No 
+               IN (${check_No.map(value => `'${value}'`).join(',')})
+              `);
+
+if (rows.affectedRows != 0 && rows.errno == undefined) {
+  res.send('ok');
+  console.log(check_No + "번 정보 삭제완료");
+} else {
+  res.send('fail');
+  console.log("거래처 정보 삭제 실패");
+}
+});
+
+/////////////////////////////////// 7. customerInfo.ejs 사용 종료 ///////////////////////////////////
+
+/////////////////////////////////// 8. summarySheet.ejs 사용 ///////////////////////////////////
+
+// 날짜 필터로 검색하기
+app.post('/viewBtnSearch', async (req, res) => {
+	let beforeDate = req.body.beforeDate;
+	let afterDate  = req.body.afterDate;
+	let rows = await asyncQuery(`SELECT id, 
+									    date, 
+									    money 
+								 FROM nodejs_crud.ledger
+								 WHERE date BETWEEN '${beforeDate}' AND '${afterDate}'
+								 ORDER BY date
+								`);
+	res.json(rows);
+});
+
+/////////////////////////////////// 8. summarySheet.ejs 사용 종료 ///////////////////////////////////
+
+/////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
+
+// 글 가져오기
+app.post('/board_get', async (req, res) => {
+  try {
+    const data = await readDataFromJson(); // 비동기로 데이터 로딩
+    if (!data || !data.board) {
+      res.status(500).json({ error: 'Error reading data from data.json' });
+      return;
+    }
+    const board = data.board;
+    res.json(board);
+  } catch (error) {
+    console.error('Error processing board_get:', error);
+    res.status(500).json({ error: 'Error processing board_get' });
+  }
+});
+
+// 상세페이지 이동 : 예) board_detailed_page?board_no=1
+app.get('/board_detailed_page', function(req, res) {
+  let board_no = req.query.board_no;
+  let board_title = req.query.board_title;
+  let board_user = req.query.board_user;
+  let board_date = req.query.board_date;
+  console.log(board_no);
+  console.log(board_title);
+  console.log(board_user);
+  console.log(board_date);
+  res.render('board_detailed_page', { board_no:board_no, board_title:board_title, board_user:board_user, board_date:board_date });
+});
+
+/////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
+
+
+
+
+
+
+
+/////////////////////////////////// 로컬 DB 대신 data.json 사용하기 위한 소스코드  ///////////////////////////////////
+
+/*
+// data.json 파일 읽기 위해 사용
+const fs = require('fs');
+
+// 비동기적으로 파일 읽기
+async function readDataFromJson() {
+  try {
+    const data = await fs.promises.readFile('views/data.json', 'utf8');
+    const jsonData = JSON.parse(data);
+    return jsonData;
+  } catch (error) {
+    console.error('data.json에서 데이터를 읽는 중 오류 발생:', error);
+    return null;
+  }
+}
+
+// DB 연결
+async function _getPool() {
+  try {
+    const jsonData = readDataFromJson();
+    const pool = mysql2.createPool({
+      host: jsonData.host,
+      user: jsonData.user,
+      password: jsonData.password,
+      database: jsonData.database
+    });
+    return pool;
+  } catch (error) {
+    console.error('연결 풀을 생성하는 중 오류 발생:', error);
+    return null;
+  }
+}
+
+// DB 연결
+async function _getConn() {
+  try {
+    const pool = await _getPool();
+    const connection = await pool.getConnection();
+    return connection;
+  } catch (error) {
+    console.error('연결 객체를 가져오는 중 오류 발생:', error);
+    return null;
+  }
+}
+
+// 거래처정보 페이지 렌더링
 app.get('/customerInfo', async (req, res) => {
 	const data = await readDataFromJson();
 	  if (!data || !data.customerInfo) {
@@ -238,26 +648,6 @@ app.get('/summarySheet', async (req, res) => {
     res.render('summarySheet', { rows: rows, monthly_total: monthly_total_array, sessionID: sessionID, today: today, oneMonthAgoStr: oneMonthAgoStr });
   }
 });
-
-// 메뉴
-app.get('/lunchMenu', async (req, res) => {
-	res.render('lunchMenu');
-
-});
-
-// 게시판
-app.get('/board', async (req, res) => {
-	if (!req.session.user || req.session.user === undefined) {
-    res.render("board");
-  } else {
-    sessionID = req.session.user.id;
-    res.render('board', {sessionID: sessionID});
-  }	
-});
-
-/////////////////////////////////// 3. 페이지 렌더링 종료 ///////////////////////////////////
-
-/////////////////////////////////// 4. register.ejs 사용 시작 ///////////////////////////////////
 
 // 회원가입 시 아이디 중복확인
 app.post("/id_duplicate", async (req, res, err) => {
@@ -329,10 +719,6 @@ app.post('/register', async (req, res, err) => {
   }
 });
 
-/////////////////////////////////// 4. register.ejs 사용 종료 ///////////////////////////////////
-
-/////////////////////////////////// 5. login.ejs 사용 시작 ///////////////////////////////////
-
 // 로그인
 app.post("/loginaction", async (req, res, err) => {
   let userIP = requestIp.getClientIp(req);
@@ -374,36 +760,6 @@ app.post("/loginaction", async (req, res, err) => {
     res.send("fail");
   }
 });
-
-/////////////////////////////////// 5. login.ejs 사용 종료 ///////////////////////////////////
-
-/////////////////////////////////// 6. headnavbar.ejs 사용 시작 ///////////////////////////////////
-
-// 로그아웃
-app.post("/logoutaction", async (req, res, err) => {
-
-    sessionID = req.body.sessionID;
-	// 로그인 여부 확인
-    if (req.session.user) {
-        req.session.destroy(
-            function(err) {
-                if (err) {
-					console.log('로그아웃 실패');
-                    res.send("error");
-                } else {
-					console.log('로그아웃 성공');
-                	res.send("ok");
-				}   
-            })
-    } else {
-        console.log('로그인 되어 있지 않습니다.');
-        res.send("fail");
-    }
-});
-
-/////////////////////////////////// 6. headnavbar.ejs 사용 종료 ///////////////////////////////////
-
-/////////////////////////////////// 7. customerInfo.ejs 사용 시작 ///////////////////////////////////
 
 // 거래처정보 테이블
 app.post('/customerInfo_get', async (req, res) => {
@@ -562,10 +918,6 @@ app.post('/customer_delete', async (req, res) => {
   }
 });
 
-/////////////////////////////////// 7. customerInfo.ejs 사용 종료 ///////////////////////////////////
-
-/////////////////////////////////// 8. summarySheet.ejs 사용 ///////////////////////////////////
-
 // 날짜 필터로 검색하기
 app.post('/viewBtnSearch', async (req, res) => {
   try {
@@ -593,37 +945,6 @@ app.post('/viewBtnSearch', async (req, res) => {
   }
 });
 
-/////////////////////////////////// 8. summarySheet.ejs 사용 종료 ///////////////////////////////////
 
-/////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
 
-// 글 가져오기
-app.post('/board_get', async (req, res) => {
-  try {
-    const data = await readDataFromJson(); // 비동기로 데이터 로딩
-    if (!data || !data.board) {
-      res.status(500).json({ error: 'Error reading data from data.json' });
-      return;
-    }
-    const board = data.board;
-    res.json(board);
-  } catch (error) {
-    console.error('Error processing board_get:', error);
-    res.status(500).json({ error: 'Error processing board_get' });
-  }
-});
-
-// 상세페이지 이동 : 예) board_detailed_page?board_no=1
-app.get('/board_detailed_page', function(req, res) {
-  let board_no = req.query.board_no;
-  let board_title = req.query.board_title;
-  let board_user = req.query.board_user;
-  let board_date = req.query.board_date;
-  console.log(board_no);
-  console.log(board_title);
-  console.log(board_user);
-  console.log(board_date);
-  res.render('board_detailed_page', { board_no:board_no, board_title:board_title, board_user:board_user, board_date:board_date });
-});
-
-/////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
+*/
