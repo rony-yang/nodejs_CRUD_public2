@@ -69,9 +69,80 @@
 			display: inline-block;
 		}
 
+		#main input[type="submit"].danger,
+		#main input[type="reset"].danger,
+		#main input[type="button"].danger,
+		#main button.danger,
+		#main .button.danger {
+		background-color: #ff6666;
+		color: #ffffff !important;
+		box-shadow: none;
+		}
+
+		#main input[type="submit"].danger:hover,
+		#main input[type="reset"].danger:hover,
+		#main input[type="button"].danger:hover,
+		#main button.danger:hover,
+		#main .button.danger:hover {
+		background-color: #ff8080;
+		}
+
+		#main input[type="submit"].primary,
+		#main input[type="reset"].primary,
+		#main input[type="button"].primary,
+		#main button.primary,
+		#main .button.primary {
+			background-color: #6666ff;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].primary:hover,
+		#main input[type="reset"].primary:hover,
+		#main input[type="button"].primary:hover,
+		#main button.primary:hover,
+		#main .button.primary:hover {
+			background-color: #8080ff;
+		}
+
+		#main input[type="submit"].success,
+		#main input[type="reset"].success,
+		#main input[type="button"].success,
+		#main button.success,
+		#main .button.success {
+			background-color: #1c975d;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].success:hover,
+		#main input[type="reset"].success:hover,
+		#main input[type="button"].success:hover,
+		#main button.success:hover,
+		#main .button.success:hover {
+			background-color: #20ac6b;
+		}
+			
+		#main input[type="submit"].warning,
+		#main input[type="reset"].warning,
+		#main input[type="button"].warning,
+		#main button.warning,
+		#main .button.warning {
+			background-color: #ffc107;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].warning:hover,
+		#main input[type="reset"].warning:hover,
+		#main input[type="button"].warning:hover,
+		#main button.warning:hover,
+		#main .button.warning:hover {
+			background-color: #ffcc33;
+		}
 		</style>
 		
-		<%-include('common/headnavbar.ejs')%>
+		<%-include('../common/headnavbar.ejs')%>
 
 
 	</head>
@@ -135,7 +206,7 @@
 									제목
 								</div>
 								<div class="register_input_style">
-									<th><textarea class="form-control input-style" id="board_title" readonly style="height: 30px;"></textarea></th>
+									<th><textarea class="form-control input-style" id="board_title" style="height: 30px;"></textarea></th>
 								</div>
 							</div>
 
@@ -144,10 +215,11 @@
 									내용
 								</div>
 								<div class="register_input_style">
-									<th><textarea class="form-control input-style" id="board_contents" readonly style="height: 300px;"></textarea></th>
+									<th><textarea class="form-control input-style" id="board_contents" style="height: 300px;"></textarea></th>
 								</div>
 							</div>
-
+              <button type="button" class="button warning" onclick="write()">글 작성하기</button>
+							<button type="button" class="button primary" onclick="back_board()">돌아가기</button>
             </body>
             
         </section>
@@ -156,7 +228,7 @@
 
         </div>
 
-			<%-include('common/footer.ejs')%>
+			<%-include('../common/footer.ejs')%>
 
 			</div>
 
@@ -164,17 +236,50 @@
 	</body>
 <script>
 	$(document).ready(function() {
-		let board_no = "<%= board_no %>";
-		let board_title = "<%= board_title %>";
-		let board_user = "<%= board_user %>";
-		let board_date = "<%= board_date %>";
-		let board_contents = "<%= board_contents %>";
-
-		$('#board_no').val(board_no);
-		$('#board_title').val(board_title);
+    let board_no = "<%= next_board_no %>";
+		let board_user = "<%= sessionID %>";
+		let board_date = "<%= today %>";
+    
+    $('#board_no').val(board_no);
 		$('#board_user').val(board_user);
 		$('#board_date').val(board_date);
-		$('#board_contents').val(board_contents);
 	});
+
+  // 돌아가기 버튼
+	function back_board() {
+		window.location.href = "/board";
+	}
+
+  // 글 작성하기 버튼
+	function write() {
+    console.log('111111111111111111111');
+    var board_no = document.getElementById("board_no").value;
+    var board_user = document.getElementById("board_user").value;
+    var board_date = document.getElementById("board_date").value;
+    var board_title = document.getElementById("board_title").value;
+    var board_contents = document.getElementById("board_contents").value;
+    console.log(board_no);
+    console.log(board_user);
+    console.log(board_date);
+    console.log(board_title);
+    console.log(board_contents);
+    $.ajax({
+        url: "/save_board",
+        type: "POST",
+        data: {
+            board_no: board_no,
+            board_user: board_user,
+            board_date: board_date,
+            board_title: board_title,
+            board_contents: board_contents
+        },
+        success: function(response) {
+            console.log("게시글이 성공적으로 저장되었습니다.");
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("게시글 저장 중 오류가 발생했습니다:", textStatus, errorThrown);
+        }
+    });
+	}
 </script>
 </html>

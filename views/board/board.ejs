@@ -90,10 +90,80 @@
 			background: #e1d0e0;
 			color: #000000;	
 		}	
+		#main input[type="submit"].danger,
+		#main input[type="reset"].danger,
+		#main input[type="button"].danger,
+		#main button.danger,
+		#main .button.danger {
+		background-color: #ff6666;
+		color: #ffffff !important;
+		box-shadow: none;
+		}
 
+		#main input[type="submit"].danger:hover,
+		#main input[type="reset"].danger:hover,
+		#main input[type="button"].danger:hover,
+		#main button.danger:hover,
+		#main .button.danger:hover {
+		background-color: #ff8080;
+		}
+
+		#main input[type="submit"].primary,
+		#main input[type="reset"].primary,
+		#main input[type="button"].primary,
+		#main button.primary,
+		#main .button.primary {
+			background-color: #6666ff;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].primary:hover,
+		#main input[type="reset"].primary:hover,
+		#main input[type="button"].primary:hover,
+		#main button.primary:hover,
+		#main .button.primary:hover {
+			background-color: #8080ff;
+		}
+
+		#main input[type="submit"].success,
+		#main input[type="reset"].success,
+		#main input[type="button"].success,
+		#main button.success,
+		#main .button.success {
+			background-color: #1c975d;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].success:hover,
+		#main input[type="reset"].success:hover,
+		#main input[type="button"].success:hover,
+		#main button.success:hover,
+		#main .button.success:hover {
+			background-color: #20ac6b;
+		}
+			
+		#main input[type="submit"].warning,
+		#main input[type="reset"].warning,
+		#main input[type="button"].warning,
+		#main button.warning,
+		#main .button.warning {
+			background-color: #ffc107;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].warning:hover,
+		#main input[type="reset"].warning:hover,
+		#main input[type="button"].warning:hover,
+		#main button.warning:hover,
+		#main .button.warning:hover {
+			background-color: #ffcc33;
+		}
 		</style>
 		
-		<%-include('common/headnavbar.ejs')%>
+		<%-include('../common/headnavbar.ejs')%>
 
 
 	</head>
@@ -119,15 +189,17 @@
                 <div class="dataTable_body">
                   <table id="board_dataTable" style="width:100%">	
                   </table>	
-  
+									
                 </div>
-
+								<a class="button warning" onclick="checkAccess('write')">글쓰기</a>
+								<a class="button success" onclick="checkAccess('modify')">수정</a>
+								<a class="button danger" onclick="checkAccess('delete')">삭제</a>
               </body>
 
             </section>
         </div>
 
-			<%-include('common/footer.ejs')%>
+			<%-include('../common/footer.ejs')%>
 
 			</div>
 
@@ -188,7 +260,7 @@
           // 제목 누르면 세부 페이지로 이동
           $('#board_dataTable tbody').on('click', 'tr', function() {
             var data = $('#board_dataTable').DataTable().row(this).data();
-            window.location.href = '/board_detailed_page?board_no=' + data.board_no;
+            window.location.href = '/board_detailed_page?board_no=' + data.board_no; // 상대경로
           });
         }, //--success
         error: function(jqXHR, textStatus, errorThrown) {
@@ -197,6 +269,39 @@
       }); //--ajax
     }; //--view_dataTable
 
+		/*
+		<a class="button warning" onclick="board_write()">글쓰기</a>
+		<a class="button success" onclick="board_modifh()">수정</a>
+		<a class="button danger" onclick="board_delete()">삭제</a>*/
+
+		// 로그인 되어 있는지 확인해서 접근 가능하도록 하기
+		function checkAccess(action) {
+			if (sessionID && sessionID !== '') {
+					// 로그인되어 있음
+					if (action === 'write') {
+							// 글쓰기 페이지로 이동
+							window.location.href = "/board_write";
+					} else if (action === 'modify') {
+							// 수정 페이지로 이동
+							window.location.href = "/modify";
+					} else if (action === 'delete') {
+							// 삭제 처리
+							deleteConfirmation();
+					}
+			} else {
+					// 로그인되어 있지 않음
+					alert('로그인 후에 접근할 수 있습니다.');
+			}
+	}
+	
+	// 삭제 확인 처리
+	function deleteConfirmation() {
+			if (confirm('정말로 삭제하시겠습니까?')) {
+					// 삭제 처리
+			} else {
+					// 취소
+			}
+	}
   </script>
 
 </html>

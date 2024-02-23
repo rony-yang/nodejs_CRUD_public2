@@ -1,0 +1,202 @@
+<!DOCTYPE HTML>
+<!--
+	Stellar by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+
+<html>
+	<head>
+		<title>게시판</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="css/main.css" />
+		<script src="js/main_contents.js"></script>
+		
+		<!-- 부트스트랩 사용 JavaScript 와 CSS -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+		<!-- jQuery 사용 -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+		<!-- 날짜 및 시간 처리를 쉽게 하기 위한 JavaScript 라이브러리 -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+		<!-- dataTable 사용 위한 JavaScript 와 CSS -->
+		<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+		<!-- DataTables 확장 플러그인 JavaScript 와 CSS -->
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css"/>
+		<script type="text/javascript" src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+		
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous">
+
+		<style>
+		@font-face {
+			font-family: 'SUITE-Regular';
+			src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/SUITE-Regular.woff2') format('woff2');
+			font-weight: 400;
+			font-style: normal;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+			font-family: 'SUITE-Regular', Arial, sans-serif;
+		}
+
+		body {
+			font-family: 'SUITE-Regular', Arial, sans-serif;
+		}	
+
+		.register_head_style {
+			font-weight: bold;
+		}
+		.register_form_style {
+			display: inline-flex;
+			justify-content: flex-start;
+			align-items: baseline;
+			width: 100%;
+			position: relative;
+			text-align: center;
+			margin-bottom: 1rem;
+		}
+			
+		.register_name_style {
+			font-size: 1.1rem;
+			color: #636363;
+			font-weight: bold;
+			width: 20%;
+		}
+		.register_input_style {
+			width: 80%;
+			display: inline-block;
+		}
+
+		#main input[type="submit"].primary,
+		#main input[type="reset"].primary,
+		#main input[type="button"].primary,
+		#main button.primary,
+		#main .button.primary {
+			background-color: #6666ff;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].primary:hover,
+		#main input[type="reset"].primary:hover,
+		#main input[type="button"].primary:hover,
+		#main button.primary:hover,
+		#main .button.primary:hover {
+			background-color: #8080ff;
+		}
+		</style>
+		
+		<%-include('../common/headnavbar.ejs')%>
+
+
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<hr>
+						<h1 class="register_head_style">게시판</h1>
+						<br>
+					</header>
+
+				<!-- Main -->
+        <div id="main">
+
+        <section class="main special">
+                                        
+            <!-- <header class="major">
+                <h3 class="register_head_style">제목</h3>
+            </header> -->
+            
+            <body>
+
+
+
+							<div style="display: flex; width: 100%;">
+								<div class="register_form_style" style="width: 20%;">
+									<div class="register_name_style" style="width: 50%;">
+										글 번호
+									</div>
+									<div class="register_input_style" style="width: 50%;">
+										<input type="text" class="form-control form-control-xl" id="board_no" readonly>
+									</div>
+								</div>
+
+								<div class="register_form_style" style="width: 40%; margin-left: 50px;">
+									<div class="register_name_style">
+										작성자
+									</div>
+									<div class="register_input_style">
+										<input type="text" class="form-control form-control-xl" id="board_user" readonly>
+									</div>
+								</div>
+	
+								<div class="register_form_style" style="width: 40%; margin-left: 50px;">
+									<div class="register_name_style">
+										작성일
+									</div>
+									<div class="register_input_style">
+										<input type="text" class="form-control form-control-xl" id="board_date" readonly>
+									</div>
+								</div>
+							</div>
+
+<hr>
+							<div class="register_form_style">
+								<div class="register_name_style">
+									제목
+								</div>
+								<div class="register_input_style">
+									<th><textarea class="form-control input-style" id="board_title" readonly style="height: 30px;"></textarea></th>
+								</div>
+							</div>
+
+							<div class="register_form_style">
+								<div class="register_name_style">
+									내용
+								</div>
+								<div class="register_input_style">
+									<th><textarea class="form-control input-style" id="board_contents" readonly style="height: 300px;"></textarea></th>
+								</div>
+							</div>
+							<button type="button" class="button primary" onclick="back_board()">돌아가기</button>
+            </body>
+            
+        </section>
+
+
+
+        </div>
+
+			<%-include('../common/footer.ejs')%>
+
+			</div>
+
+
+	</body>
+<script>
+	$(document).ready(function() {
+		let board_no = "<%= board_no %>";
+		let board_title = "<%= board_title %>";
+		let board_user = "<%= board_user %>";
+		let board_date = "<%= board_date %>";
+		let board_contents = "<%= board_contents %>";
+
+		$('#board_no').val(board_no);
+		$('#board_title').val(board_title);
+		$('#board_user').val(board_user);
+		$('#board_date').val(board_date);
+		$('#board_contents').val(board_contents);
+	});
+
+	// 돌아가기 버튼
+	function back_board() {
+		window.location.href = "/board";
+	}
+</script>
+</html>

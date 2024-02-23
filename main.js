@@ -497,10 +497,10 @@ app.post('/viewBtnSearch', async (req, res) => {
 // 게시판
 app.get('/board', async (req, res) => {
 	if (!req.session.user || req.session.user === undefined) {
-    res.render('board');
+    res.render('./board/board');
   } else {
     sessionID = req.session.user.id;
-    res.render('board', {sessionID: sessionID});
+    res.render('./board/board', {sessionID: sessionID});
   }	
 });
 
@@ -515,7 +515,6 @@ app.post('/board_get', async (req, res) => {
 // 상세페이지 이동 : 예) board_detailed_page?board_no=1
 app.get('/board_detailed_page', async function(req, res) {
   let board_no = req.query.board_no;
-
   let rows = await asyncQuery(`SELECT * FROM nodejs_crud.board 
                                 WHERE board_no = '${board_no}'`);
   if (rows.length > 0) {
@@ -523,10 +522,70 @@ app.get('/board_detailed_page', async function(req, res) {
     let board_user  = rows[0].board_user;
     let board_date  = rows[0].board_date;
     let board_contents  = rows[0].board_contents;
-    res.render('board_detailed_page', { board_no: board_no, board_title: board_title, board_user: board_user, board_date: board_date, board_contents:board_contents });
+    res.render('./board/board_detailed_page', { board_no: board_no, board_title: board_title, board_user: board_user, board_date: board_date, board_contents:board_contents });
   } else {
     res.status(404).send("페이지를 찾을 수 없습니다.");
   }
+});
+
+// 게시판 글쓰기 페이지 렌더링
+app.get('/board_write', async (req, res) => {
+  var today = new Date().toISOString().slice(0, 10);
+  // 게시판 번호 최대값 가져와서 그 다음 숫자로 넣어주기
+  let rows = await asyncQuery(`SELECT MAX(board_no) as max_board_no FROM nodejs_crud.board`);
+  let next_board_no;
+  if (rows && rows.length > 0 && rows[0].max_board_no !== null) {
+    // 다음 board_no 값 계산
+    next_board_no = rows[0].max_board_no + 1;
+  } else {
+    // 테이블에 아무 데이터도 없는 경우
+    next_board_no = 1; // 1부터 시작하도록 설정
+  }
+
+	if (!req.session.user || req.session.user === undefined) {
+    res.render('./board/board_write');
+  } else {
+    sessionID = req.session.user.id;
+    res.render('./board/board_write', {sessionID: sessionID, today:today, next_board_no:next_board_no});
+  }	
+});
+
+// 글 작성하기 버튼
+app.post('/save_board', async (req, res) => {
+  let board_no = req.query.board_no;
+  let board_user = req.query.board_user;
+  let board_date = req.query.board_date;
+  let board_title = req.query.board_title;
+  let board_contents = req.query.board_contents;
+  console.log(board_no);
+  console.log(board_user);
+  console.log(board_date);
+  console.log(board_title);
+  console.log(board_contents);
+	let rows = await asyncQuery(`INSERT INTO nodejs_crud.board
+									(
+										board_no, 
+										board_user, 
+										board_date, 
+										board_title,
+										board_contents
+									)
+										VALUES (?,?,?,?,?)`, 
+									[
+										board_no,
+										board_user,
+										board_date,
+										board_title,
+                    board_contents
+									]);
+
+	if (rows.affectedRows != 0 && rows.errno == undefined) {
+	  res.send('ok');
+	  console.log("글쓰기 성공");
+	} else {
+	  res.send('fail');
+	  console.log("글쓰기 실패");
+	}
 });
 
 /////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////

@@ -203,15 +203,18 @@
 <script>
 	let sessionID = sessionStorage.getItem('sessionID');
 	
-	let currentURL = window.location.pathname;
+	let currentURL = window.location.pathname; // 현재 선택되어있는 url
 	let nav_links = document.querySelectorAll('#nav .nav_link');
-	
+
+	// 현재 선택되어있는 페이지 활성화
 	nav_links.forEach(function(link) {
-		if (link.getAttribute('href') === currentURL) {
-			link.classList.add('active');
-		} else {
-			link.classList.remove('active');
-		}
+    let href = link.getAttribute('href');
+		// 게시판, 게시판 상세페이지 모두 게시판으로 활성화 되도록
+    if ((href === currentURL && !href.includes('board')) || (href.includes('board') && currentURL.includes('board'))) {
+        link.classList.add('active');
+    } else {
+        link.classList.remove('active');
+    }
 	});
 	
 	// 로그아웃 처리
