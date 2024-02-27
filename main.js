@@ -17,7 +17,7 @@
 	6. headnavbar.ejs 사용
 	7. customerInfo.ejs 사용
 	8. summarySheet.ejs 사용
-  9. board.ejs 사용
+  10. americano.ejs 사용
 
 */
 
@@ -107,9 +107,9 @@ async function asyncQuery(sql, params = []) {
 	return false;
 }
 
-// 구글 캘린더 사용하기
-// const fs = require('fs');
-// const credentials = JSON.parse(fs.readFileSync('views/etc/credentials.json', 'utf8'));
+const fs = require('fs');
+// 구글 캘린더 OAuth
+const credentials = JSON.parse(fs.readFileSync('views/etc/credentials.json', 'utf8'));
 
 /////////////////////////////////// 2. DB 종료 ///////////////////////////////////
 
@@ -132,12 +132,6 @@ app.get("/", async (req, res) => {
 // 메뉴
 app.get('/lunchMenu', async (req, res) => {
 	res.render('etc/lunchMenu');
-});
-
-// 아메리카노
-app.get('/ame', async (req, res) => {
-	res.render('etc/americano');
-  // res.render('etc/americano',{credentials});
 });
 
 /////////////////////////////////// 3. 페이지 렌더링 종료 ///////////////////////////////////
@@ -598,6 +592,62 @@ app.post('/save_board', async (req, res) => {
 });
 
 /////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
+
+/////////////////////////////////// 10. americano.ejs 사용 ///////////////////////////////////
+
+// 페이지 렌더링
+app.get('/ame', async (req, res) => {
+	res.render('etc/americano');
+  // res.render('etc/americano',{credentials});
+});
+
+// 체크박스 체크하면 값 json으로 저장하기
+app.post('/cal_checked', async (req, res) => {
+  let selected_date = req.body.selected_date;
+  let selected_value = req.body.selected_value;
+
+  // JSON 데이터 생성
+  let data = {
+    date: selected_date,
+    value: selected_value
+  };
+
+    // 데이터를 JSON 파일로 저장
+    const filePath = path.join(__dirname, 'views', 'etc', 'cal_data.json');
+    fs.readFile(filePath, 'utf8', (err, fileData) => {
+      if (err) {
+        console.error('Error reading file:', err);
+        return res.status(500).send('Internal Server Error');
+      }
+
+      let jsonData = [];
+      if (fileData) {
+        jsonData = JSON.parse(fileData);
+      }
+
+      jsonData.push(data);
+
+      fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), (err) => {
+        if (err) {
+          console.error('Error writing file:', err);
+          return res.status(500).send('Internal Server Error');
+        }
+        
+        console.log('Data saved successfully:', data);
+        res.sendStatus(200); // 요청 처리 성공 응답 보내기
+      });
+    });
+
+});
+
+
+
+/////////////////////////////////// 10. americano.ejs 사용 ///////////////////////////////////
+
+
+
+
+
 
 
 
