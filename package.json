@@ -8,6 +8,8 @@
 		"node": "18.x"
 	},
 	"dependencies": {
+		"@fullcalendar/core": "^6.1.11",
+		"@fullcalendar/daygrid": "^6.1.11",
 		"bcrypt": "^5.1.0",
 		"body-parser": "^1.20.2",
 		"datatables.net": "^1.13.4",
@@ -15,6 +17,8 @@
 		"ejs": "^3.1.9",
 		"express": "^4.18.2",
 		"express-session": "^1.17.3",
+		"google-auth-library": "^9.6.3",
+		"googleapis": "^133.0.0",
 		"memorystore": "^1.6.7",
 		"moment": "^2.29.4",
 		"moment-timezone": "^0.5.43",

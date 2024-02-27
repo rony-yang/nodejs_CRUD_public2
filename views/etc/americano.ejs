@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <style>
+      /* 달력 컨테이너와 추가 요소를 가로로 나란히 나타내기 위한 스타일 */
+      .container {
+        display: flex;
+        /* justify-content: space-between;  요소 간의 간격을 최대한 넓힘 */
+      }
+      #calendar {
+        width: 50%; /* 달력이 차지하는 너비 */
+      }
+      #add_contents {
+        width: 25%; /* 추가 콘텐츠가 차지하는 너비 */
+        padding: 0 10px; /* 좌우에 10px의 패딩 추가 */
+        display: flex; /* 내부 요소를 정렬하기 위해 사용 */
+        justify-content: center; /* 가운데 정렬 */
+      }
+
+      /* 체크박스 스타일 */
+      .checkbox-container {
+        margin-top: 10px;
+      }
+      .checkbox-container input[type="checkbox"] {
+        display: none;
+      }
+      .checkbox-container input[type="checkbox"] + label {
+        cursor: pointer;
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        vertical-align: middle;
+      }
+      .checkbox-container input[type="checkbox"]:checked + label {
+        background-color: #007bff;
+      }
+
+    </style>
+    <script>
+
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth'
+        });
+        calendar.render();
+      });
+
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div id='calendar'></div>
+      <div id='add_contents'>
+        <p>ddddddddddddddddddddddddddddddddddddddd</p>
+      </div>
+    </div>
+  </body>
+</html>

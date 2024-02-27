@@ -107,6 +107,10 @@ async function asyncQuery(sql, params = []) {
 	return false;
 }
 
+// 구글 캘린더 사용하기
+// const fs = require('fs');
+// const credentials = JSON.parse(fs.readFileSync('views/etc/credentials.json', 'utf8'));
+
 /////////////////////////////////// 2. DB 종료 ///////////////////////////////////
 
 /////////////////////////////////// 3. 페이지 렌더링 시작 ///////////////////////////////////
@@ -127,8 +131,13 @@ app.get("/", async (req, res) => {
 
 // 메뉴
 app.get('/lunchMenu', async (req, res) => {
-	res.render('lunchMenu');
+	res.render('etc/lunchMenu');
+});
 
+// 아메리카노
+app.get('/ame', async (req, res) => {
+	res.render('etc/americano');
+  // res.render('etc/americano',{credentials});
 });
 
 /////////////////////////////////// 3. 페이지 렌더링 종료 ///////////////////////////////////
