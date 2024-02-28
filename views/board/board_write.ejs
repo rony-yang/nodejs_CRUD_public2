@@ -218,7 +218,7 @@
 									<th><textarea class="form-control input-style" id="board_contents" style="height: 300px;"></textarea></th>
 								</div>
 							</div>
-              <button type="button" class="button warning" onclick="write()">글 작성하기</button>
+              <button type="button" class="button warning" onclick="board_write()">글 작성하기</button>
 							<button type="button" class="button primary" onclick="back_board()">돌아가기</button>
             </body>
             
@@ -251,18 +251,13 @@
 	}
 
   // 글 작성하기 버튼
-	function write() {
-    console.log('111111111111111111111');
+	function board_write() {
     var board_no = document.getElementById("board_no").value;
     var board_user = document.getElementById("board_user").value;
     var board_date = document.getElementById("board_date").value;
     var board_title = document.getElementById("board_title").value;
     var board_contents = document.getElementById("board_contents").value;
-    console.log(board_no);
-    console.log(board_user);
-    console.log(board_date);
-    console.log(board_title);
-    console.log(board_contents);
+
     $.ajax({
         url: "/save_board",
         type: "POST",
@@ -274,12 +269,13 @@
             board_contents: board_contents
         },
         success: function(response) {
-            console.log("게시글이 성공적으로 저장되었습니다.");
+					window.location.href = "/board";
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error("게시글 저장 중 오류가 발생했습니다:", textStatus, errorThrown);
+						alert('글쓰기에 실패하였습니다.');
         }
-    });
+    });	
 	}
 </script>
 </html>

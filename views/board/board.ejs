@@ -192,8 +192,9 @@
 									
                 </div>
 								<a class="button warning" onclick="checkAccess('write')">글쓰기</a>
-								<a class="button success" onclick="checkAccess('modify')">수정</a>
-								<a class="button danger" onclick="checkAccess('delete')">삭제</a>
+								<a class="button success" onclick="checkAccess('my_board')">내 글 모아보기</a>
+								<!-- <a class="button success" onclick="checkAccess('modify')">수정</a>
+								<a class="button danger" onclick="checkAccess('delete')">삭제</a> -->
               </body>
 
             </section>
@@ -225,7 +226,7 @@
             data			    : result, 			    // 데이터값
             responsive		: true, 			      // 반응형 설정
             lengthMenu		: [ 2, 3, 5, 10 ],	// 표시 건수 단위
-            displayLength	: 2, 				        // 표시 건수 설정
+            displayLength	: 5, 				        // 표시 건수 설정
             // stateSave		: true, 			    // 현재 상태 보존
             scrollX		  	: true, 			      // 가로스크롤
             columnDefs: [
@@ -281,27 +282,84 @@
 					if (action === 'write') {
 							// 글쓰기 페이지로 이동
 							window.location.href = "/board_write";
-					} else if (action === 'modify') {
+					} else if (action === 'my_board') {
+						// 내가 쓴 글만 모아보기
+						my_dataTable();
+					} 
+					/*else if (action === 'modify') {
 							// 수정 페이지로 이동
 							window.location.href = "/modify";
 					} else if (action === 'delete') {
 							// 삭제 처리
 							deleteConfirmation();
-					}
+					}*/
 			} else {
 					// 로그인되어 있지 않음
 					alert('로그인 후에 접근할 수 있습니다.');
 			}
 	}
+
+	// 내가 쓴 글만 모아보기
+	function my_dataTable() {
+		$('.dataTable_body').empty();
+		$('.dataTable_body').append("<table id='board_dataTable' style='width: 100%'></table>");
 	
-	// 삭제 확인 처리
-	function deleteConfirmation() {
-			if (confirm('정말로 삭제하시겠습니까?')) {
-					// 삭제 처리
-			} else {
-					// 취소
+		$.ajax({
+			url: "board_get_my",
+			type: "POST",
+			data: { sessionID: sessionID }, // 현재 로그인한 사용자의 세션 ID 전달
+			dataType: "json",
+			success: function(result) {
+				$('#board_dataTable').DataTable({
+					data: result,
+					responsive: true,
+					lengthMenu: [2, 3, 5, 10],
+					displayLength: 5,
+					scrollX: true,
+					columnDefs: [
+						{ targets: '_all', className: "text-center" },
+						{ targets: 0, width: "10%" },
+						{ targets: 1, width: "50%" },
+						{ targets: 2, width: "20%" },
+						{ targets: 3, width: "20%" }
+					],
+					columns: [
+						{ title: "번호", data: "board_no" },
+						{ title: "제목", data: "board_title" },
+						{ title: "작성자", data: "board_user" },
+						{ title: "작성일", data: "board_date" }
+					],
+					language: {
+						emptyTable: "데이터가 없습니다.",
+						lengthMenu: "페이지당 _MENU_ 개씩 보기",
+						info: "현재 _START_ - _END_ / _TOTAL_건",
+						infoEmpty: "데이터 없음",
+						infoFiltered: "( _MAX_건의 데이터에서 필터링됨 )",
+						search: "검색: ",
+						zeroRecords: "일치하는 데이터가 없습니다.",
+						loadingRecords: "로딩중...",
+						processing: "잠시만 기다려 주세요...",
+						paginate: {
+							next: "다음",
+							previous: "이전"
+						}
+					}
+				});
+	
+				// 제목 누르면 세부 페이지로 이동
+				$('#board_dataTable tbody').on('click', 'tr', function() {
+					var data = $('#board_dataTable').DataTable().row(this).data();
+					window.location.href = '/board_detailed_page?board_no=' + data.board_no;
+				});
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				console.error('my_dataTable 로딩 에러 :: ' + textStatus, errorThrown);
 			}
+		});
 	}
+	
+
+
   </script>
 
 </html>

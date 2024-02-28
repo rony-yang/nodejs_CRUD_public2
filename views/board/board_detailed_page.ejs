@@ -69,6 +69,24 @@
 			display: inline-block;
 		}
 
+		#main input[type="submit"].danger,
+		#main input[type="reset"].danger,
+		#main input[type="button"].danger,
+		#main button.danger,
+		#main .button.danger {
+		background-color: #ff6666;
+		color: #ffffff !important;
+		box-shadow: none;
+		}
+
+		#main input[type="submit"].danger:hover,
+		#main input[type="reset"].danger:hover,
+		#main input[type="button"].danger:hover,
+		#main button.danger:hover,
+		#main .button.danger:hover {
+		background-color: #ff8080;
+		}
+
 		#main input[type="submit"].primary,
 		#main input[type="reset"].primary,
 		#main input[type="button"].primary,
@@ -85,6 +103,42 @@
 		#main button.primary:hover,
 		#main .button.primary:hover {
 			background-color: #8080ff;
+		}
+
+		#main input[type="submit"].success,
+		#main input[type="reset"].success,
+		#main input[type="button"].success,
+		#main button.success,
+		#main .button.success {
+			background-color: #1c975d;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].success:hover,
+		#main input[type="reset"].success:hover,
+		#main input[type="button"].success:hover,
+		#main button.success:hover,
+		#main .button.success:hover {
+			background-color: #20ac6b;
+		}
+			
+		#main input[type="submit"].warning,
+		#main input[type="reset"].warning,
+		#main input[type="button"].warning,
+		#main button.warning,
+		#main .button.warning {
+			background-color: #ffc107;
+			color: #ffffff !important;
+			box-shadow: none;
+		}
+
+		#main input[type="submit"].warning:hover,
+		#main input[type="reset"].warning:hover,
+		#main input[type="button"].warning:hover,
+		#main button.warning:hover,
+		#main .button.warning:hover {
+			background-color: #ffcc33;
 		}
 		</style>
 		
@@ -152,7 +206,7 @@
 									제목
 								</div>
 								<div class="register_input_style">
-									<th><textarea class="form-control input-style" id="board_title" readonly style="height: 30px;"></textarea></th>
+									<th><textarea class="form-control input-style" id="board_title" style="height: 30px;"></textarea></th>
 								</div>
 							</div>
 
@@ -161,9 +215,13 @@
 									내용
 								</div>
 								<div class="register_input_style">
-									<th><textarea class="form-control input-style" id="board_contents" readonly style="height: 300px;"></textarea></th>
+									<th><textarea class="form-control input-style" id="board_contents" style="height: 300px;"></textarea></th>
 								</div>
 							</div>
+							<% if (edit_Btn) { %>
+								<button type="button" class="button success" onclick="edit_context()">수정</button>
+								<button type="button" class="button danger" onclick="delete_context()">삭제</button>
+							<% } %>
 							<button type="button" class="button primary" onclick="back_board()">돌아가기</button>
             </body>
             
@@ -198,5 +256,56 @@
 	function back_board() {
 		window.location.href = "/board";
 	}
+
+	// 수정하기 버튼
+	function edit_context() {
+		var board_no = document.getElementById("board_no").value;
+    var board_title = document.getElementById("board_title").value;
+    var board_contents = document.getElementById("board_contents").value;
+		
+		$.ajax({
+				url: "/edit_board",
+				type: "POST",
+				data: {
+						board_no: board_no,
+						board_title: board_title,
+						board_contents: board_contents
+				},
+				success: function(response) {
+					alert('글 수정에 성공하였습니다.');
+					window.location.href = window.location.href; // 현재 페이지를 새로고침
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+						console.error("게시글 수정 중 오류가 발생했습니다:", textStatus, errorThrown);
+						alert('수정에 실패하였습니다.');
+				}
+		});
+	}
+
+// 삭제하기 버튼
+function delete_context() {
+	var board_no = document.getElementById("board_no").value;
+
+	// 확인을 클릭할 때만 함수 실행
+	if (confirm("글을 삭제하시겠습니까?")) {
+			$.ajax({
+					url: "/delete_board",
+					type: "POST",
+					data: {
+							board_no: board_no
+					},
+					success: function(response) {
+							alert('글을 삭제하였습니다.');
+							window.location.href = "/board";
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+							console.error("게시글 삭제 중 오류가 발생했습니다:", textStatus, errorThrown);
+							alert('삭제에 실패하였습니다.');
+					}
+			});
+	}
+}
+
 </script>
+
 </html>

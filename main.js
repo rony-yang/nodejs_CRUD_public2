@@ -525,7 +525,15 @@ app.get('/board_detailed_page', async function(req, res) {
     let board_user  = rows[0].board_user;
     let board_date  = rows[0].board_date;
     let board_contents  = rows[0].board_contents;
-    res.render('./board/board_detailed_page', { board_no: board_no, board_title: board_title, board_user: board_user, board_date: board_date, board_contents:board_contents });
+
+    // 로그인 한 아이디와 게시판 글 작성 아이디 비교
+    let loggedInUserID = sessionID ? sessionID : '';
+    // 동일할 경우 수정, 삭제 버튼 활성화 : true, false로 출력
+    let edit_Btn = (loggedInUserID === board_user);
+    let delete_context = (loggedInUserID === board_user);
+    res.render('./board/board_detailed_page', 
+    { board_no: board_no, board_title: board_title, board_user: board_user, board_date: board_date, board_contents:board_contents, 
+      edit_Btn:edit_Btn, delete_context:delete_context, sessionID:sessionID });
   } else {
     res.status(404).send("페이지를 찾을 수 없습니다.");
   }
@@ -555,16 +563,12 @@ app.get('/board_write', async (req, res) => {
 
 // 글 작성하기 버튼
 app.post('/save_board', async (req, res) => {
-  let board_no = req.query.board_no;
-  let board_user = req.query.board_user;
-  let board_date = req.query.board_date;
-  let board_title = req.query.board_title;
-  let board_contents = req.query.board_contents;
-  console.log(board_no);
-  console.log(board_user);
-  console.log(board_date);
-  console.log(board_title);
-  console.log(board_contents);
+  let board_no = req.body.board_no;
+  let board_user = req.body.board_user;
+  let board_date = req.body.board_date;
+  let board_title = req.body.board_title;
+  let board_contents = req.body.board_contents;
+
 	let rows = await asyncQuery(`INSERT INTO nodejs_crud.board
 									(
 										board_no, 
@@ -584,12 +588,68 @@ app.post('/save_board', async (req, res) => {
 
 	if (rows.affectedRows != 0 && rows.errno == undefined) {
 	  res.send('ok');
-	  console.log("글쓰기 성공");
 	} else {
 	  res.send('fail');
-	  console.log("글쓰기 실패");
 	}
 });
+
+// 글 수정하기 버튼
+app.post('/edit_board', async (req, res) => {
+  let board_no = req.body.board_no;
+  let board_title = req.body.board_title;
+  let board_contents = req.body.board_contents;
+
+	let rows = await asyncQuery(`UPDATE nodejs_crud.board
+    SET board_title = '${board_title}',
+    board_contents = '${board_contents}'
+    WHERE board_no ='${board_no}'
+    `);
+
+	if (rows.affectedRows != 0 && rows.errno == undefined) {
+	  res.send('ok');
+	} else {
+	  res.send('fail');
+	}
+});
+
+// 글 삭제하기 버튼
+app.post('/delete_board', async (req, res) => {
+  let board_no = req.body.board_no;
+
+	let rows = await asyncQuery(`DELETE FROM nodejs_crud.board 
+    WHERE board_no = '${board_no}'
+    `);
+
+	if (rows.affectedRows != 0 && rows.errno == undefined) {
+	  res.send('ok');
+	} else {
+	  res.send('fail');
+	}
+});
+
+// 내 글만 모아보기
+app.post('/board_get_my', async (req, res) => {
+  let sessionID = req.body.sessionID; // 현재 로그인한 사용자의 세션 ID
+  if (!sessionID) {
+    // 세션 ID가 없으면 에러 응답
+    return res.status(400).json({ error: "세션 ID가 없습니다." });
+  }
+
+  try {
+    // 현재 로그인한 사용자의 아이디를 기준으로 해당 사용자가 작성한 게시물을 데이터베이스에서 조회
+    let rows = await asyncQuery(`SELECT * 
+                                FROM nodejs_crud.board
+                                WHERE board_user = ?`, [sessionID]);
+    // 조회 결과를 JSON 형태로 응답
+    res.json(rows);
+  } catch (error) {
+    // 오류가 발생하면 에러 응답
+    console.error("게시물 조회 중 오류:", error);
+    res.status(500).json({ error: "게시물 조회 중 오류가 발생했습니다." });
+  }
+});
+
+
 
 /////////////////////////////////// 9. board.ejs 사용 ///////////////////////////////////
 
