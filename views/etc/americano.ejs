@@ -24,41 +24,39 @@
       justify-content: center; /* 가운데 정렬 */
     }
 
-    /* 체크박스 스타일 */
-    .checkbox-container {
-      margin-top: 10px;
-    }
-    .checkbox-container input[type="checkbox"] {
-      display: none;
-    }
-    .checkbox-container input[type="checkbox"] + label {
-      cursor: pointer;
-      display: inline-block;
-      width: 1em;
-      height: 1em;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      vertical-align: middle;
-    }
-    .checkbox-container input[type="checkbox"]:checked + label {
-      background-color: #007bff;
-    }
 
   </style>
+  
 </head>
 <body>
   <div class="container">
     <div id='calendar'></div>
     <div id='add_contents'>
-      <p>본문</p>
+      <div style="display: flex; flex-direction: column;">
+        <div style="display: flex; align-items: center;"> 
+          <h3 style="margin-right: 10px;">목표 :</h3>
+          <input type="text" class="form-control" id="goal" value="믹스커피 끊기" style="margin-right: 10px; font-size: 1.17em;">
+        </div>
+        <br>
+        <div style="display: flex; align-items: center;"> 
+          <label for="start_date" style="margin-right: 10px;">시작일 :</label>
+          <input type="date" class="form-control" id="start_date" value="2024-02-19">
+        </div>
+        <br>
+        <p id="days_passed"></p>
+        <p id="days_success"></p>
+      </div>
     </div>
   </div>
 </body>
+
+
 
 <script>
     $(document).ready(function () {
       var serverRows = JSON.parse('<%- JSON.stringify(rows) %>');
       applyServerData(serverRows); // 파싱된 데이터를 함수에 전달하여 사용
+      countCheckedBoxes(serverRows); // 체크된 체크박스의 수를 카운트
     });
 
   // 서버 데이터를 풀캘린더에 적용하는 함수
@@ -152,6 +150,37 @@
         }
       });
     }
+
+    // 현재 날짜 가져와서 디데이 설정하기
+    var today = new Date(); // 현재 날짜
+    var startDateInput = document.getElementById('start_date'); // 시작일
+    var startDate = new Date(startDateInput.value);
+
+    // 시작일로부터 경과한 날짜 계산
+    var timeDiff = Math.abs(today.getTime() - startDate.getTime());
+    var daysPassed = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    // 성공률 계산하기
+    function countCheckedBoxes(serverRows) {
+      var checkedCount = 0; // 체크된 체크박스 수 초기화
+
+      // 서버 데이터에서 체크된 체크박스 수를 세기
+      serverRows.forEach(function (row) {
+          if (row.is_check) {
+              checkedCount++;
+          }
+      });
+
+      // 디스플레이 업데이트
+      var daysPassedText1 = document.getElementById('days_passed');
+      var daysPassedText2 = document.getElementById('days_success');
+      var successRate = ((checkedCount / daysPassed) * 100).toFixed(2); // 성공률 계산. 소수점 둘째자리까지
+      
+      daysPassedText1.textContent = "시작일로부터 " + daysPassed + "일 지났고 그 중 " + checkedCount + "일 성공하였습니다.";
+      daysPassedText2.textContent += "성공률은 총 " + successRate + "% 입니다.";
+
+    }
+
 
 </script>
 
