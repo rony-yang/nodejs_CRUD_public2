@@ -657,48 +657,47 @@ app.post('/board_get_my', async (req, res) => {
 
 // 페이지 렌더링
 app.get('/ame', async (req, res) => {
-	res.render('etc/americano');
-  // res.render('etc/americano',{credentials});
+  let rows = await asyncQuery(`SELECT check_date, is_check FROM nodejs_crud.calendar`);
+  res.render('etc/americano', { rows:rows });
 });
 
-// 체크박스 체크하면 값 json으로 저장하기
+// 체크박스 체크하면 DB로 저장
 app.post('/cal_checked', async (req, res) => {
-  let selected_date = req.body.selected_date;
-  let selected_value = req.body.selected_value;
+  try {
+    let selected_date = req.body.selected_date;
+    let selected_value = req.body.selected_value;
 
-  // JSON 데이터 생성
-  let data = {
-    date: selected_date,
-    value: selected_value
-  };
+    // 해당 날짜의 레코드가 있는지 확인
+    let rows1 = await asyncQuery(`
+      SELECT check_date FROM nodejs_crud.calendar WHERE check_date = ?`, [selected_date]);
+      
+    // false로 변경하지않고 해당 날짜를 삭제
+    if (rows1.length > 0) {
+      let rows2 = await asyncQuery(`DELETE FROM nodejs_crud.calendar 
+        WHERE check_date = '${selected_date}'`);
 
-    // 데이터를 JSON 파일로 저장
-    const filePath = path.join(__dirname, 'views', 'etc', 'cal_data.json');
-    fs.readFile(filePath, 'utf8', (err, fileData) => {
-      if (err) {
-        console.error('Error reading file:', err);
-        return res.status(500).send('Internal Server Error');
+      if (rows2.affectedRows != 0 && rows2.errno == undefined) {
+        res.send('ok');
+      } else {
+        res.send('fail');
       }
+    } else {
+      // 값이 없으면 새로운 레코드를 삽입합니다.
+      let rows3 = await asyncQuery(`
+        INSERT INTO nodejs_crud.calendar (check_date, is_check) VALUES (?, ?)`, [selected_date, selected_value]);
 
-      let jsonData = [];
-      if (fileData) {
-        jsonData = JSON.parse(fileData);
+      if (rows3.affectedRows != 0 && rows3.errno == undefined) {
+        res.send('ok');
+      } else {
+        res.send('fail');
       }
-
-      jsonData.push(data);
-
-      fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), (err) => {
-        if (err) {
-          console.error('Error writing file:', err);
-          return res.status(500).send('Internal Server Error');
-        }
-        
-        console.log('Data saved successfully:', data);
-        res.sendStatus(200); // 요청 처리 성공 응답 보내기
-      });
-    });
-
+    }
+  } catch (error) {
+    console.error('데이터베이스에 데이터 저장 중 오류가 발생했습니다:', error);
+    res.status(500).send('내부 서버 오류');
+  }
 });
+
 
 
 

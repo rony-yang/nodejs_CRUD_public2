@@ -217,7 +217,7 @@
 			if (result == "ok") {
 				view_txt_message("login_result", "", "red");
 				sessionStorage.setItem("sessionID", userID);
-				location.href = "/summarySheet";
+				location.href = "/board";
 			// 로그인 실패 : 빈 값이거나 값이 틀렸을 경우
 			} else {
 				view_txt_message("login_result", "아이디 또는 비밀번호를 잘못 입력했습니다.", "red");

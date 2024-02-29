@@ -45,95 +45,114 @@
     }
 
   </style>
-  <script>
-
-    document.addEventListener('DOMContentLoaded', function() {
-      var selectedDate = null;
-
-      var calendarEl = document.getElementById('calendar');
-      var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        selectable: true,
-        dayCellContent: function(arg) {
-          // 각 날짜 셀마다 날짜와 빈 체크박스를 함께 추가
-          var checkbox = document.createElement('input');
-          checkbox.type = 'checkbox'; 
-          checkbox.className = 'calendar-checkbox';
-          checkbox.id = 'checkbox-' + arg.dateStr;
-          var label = document.createElement('label');
-          label.htmlFor = checkbox.id;
-          // label.textContent = '성공'; // 체크박스와 같이 뜨는 문구
-          
-          // div 요소를 생성하여 날짜와 체크박스를 넣음
-          var container = document.createElement('div');
-          var dateDiv = document.createElement('div');
-          dateDiv.appendChild(document.createTextNode(arg.dayNumberText)); // 날짜 표시
-          var checkboxDiv = document.createElement('div');
-          checkboxDiv.appendChild(checkbox);
-          checkboxDiv.appendChild(label);
-          container.appendChild(dateDiv);
-          container.appendChild(checkboxDiv);
-
-          return { html: container.innerHTML };
-        },
-        
-        select: function(info) {
-          // 날짜를 선택할 때 실행되는 코드
-          console.log('111');
-          var dateStr = info.startStr; // 선택된 날짜
-          var data = { date: dateStr, checked: true }; // 체크된 상태로 저장
-          console.log(data);
-          saveDataToJson(data);
-          selectedDate = dateStr; // 이전에 선택된 날짜 갱신
-        },
-        unselect: function() {
-          // 날짜 선택 해제될 때 실행되는 코드
-          if (selectedDate) {
-            var data = { date: selectedDate, checked: false }; // 해제된 상태로 저장
-            console.log(data);
-            saveDataToJson(data);
-            selectedDate = null; // 이전에 선택된 날짜 초기화
-            console.log(selectedDate);
-          }
-        }
-      });
-    
-      calendar.render();
-
-      // JSON 데이터를 파일에 저장하는 함수
-      function saveDataToJson(data) {
-
-        let selected_date = data.date;
-        let selected_value = data.checked;
-
-        $.ajax({
-          url: "cal_checked",
-          type: "POST",
-          data: {
-            selected_date: selected_date,
-            selected_value: selected_value
-          },
-          dataType: "json",
-          success: function(result) {
-            printValue(result);
-          },
-          error: function(request, status, error) {
-            console.error(error);
-          }
-        });
-      }
-    });
-    
-    
-
-  </script>
 </head>
 <body>
   <div class="container">
     <div id='calendar'></div>
     <div id='add_contents'>
-      <p>ddddddddddddddddddddddddddddddddddddddd</p>
+      <p>본문</p>
     </div>
   </div>
 </body>
+
+<script>
+    $(document).ready(function () {
+      var serverRows = JSON.parse('<%- JSON.stringify(rows) %>');
+      applyServerData(serverRows); // 파싱된 데이터를 함수에 전달하여 사용
+    });
+
+  // 서버 데이터를 풀캘린더에 적용하는 함수
+  function applyServerData(serverRows) {
+    var calendarEl = document.getElementById('calendar');
+
+    // 각 날짜 셀마다 서버 데이터를 기반으로 체크박스 설정
+    calendarEl.querySelectorAll('.fc-day').forEach(function(dayElement) {
+      var dateStr = dayElement.getAttribute('data-date'); // 날짜
+      var checkbox = dayElement.querySelector('.calendar-checkbox'); // 체크박스
+
+      // 서버 데이터에서 해당 날짜의 체크 여부를 가져와서 설정
+      var data = serverRows.find(function(item) {
+        return item.check_date === dateStr;
+      });
+
+      // 날짜 값이 있는 경우 체크박스 선택되어서 페이지 렌더링
+      if (data) {
+        checkbox.checked = data.is_check;
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var selectedDate = null;
+
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        selectable: true,
+        dayCellContent: function(arg) {
+            // 각 날짜 셀마다 날짜와 빈 체크박스를 함께 추가
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'calendar-checkbox';
+            checkbox.id = 'checkbox-' + arg.dateStr;
+            var label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            label.textContent = '성공';
+
+            // div 요소를 생성하여 날짜와 체크박스를 넣음
+            var container = document.createElement('div');
+            var dateDiv = document.createElement('div');
+            dateDiv.appendChild(document.createTextNode(arg.dayNumberText)); // 날짜 표시
+            var checkboxDiv = document.createElement('div');
+            checkboxDiv.appendChild(checkbox);
+            checkboxDiv.appendChild(label);
+            container.appendChild(dateDiv);
+            container.appendChild(checkboxDiv);
+
+            return { html: container.innerHTML };
+        },
+        select: function(info) {
+          // 날짜를 선택할 때 실행되는 코드
+          var dateStr = info.startStr; // 선택된 날짜
+          var data = { date: dateStr, checked: true }; // 체크된 상태로 저장
+          save_value(data);
+        },
+        unselect: function() {
+          // 날짜 선택 해제될 때 실행되는 코드
+          if (selectedDate) {
+            var dateStr = selectedDate; // 선택된 날짜
+            var data = { date: dateStr, checked: false }; // 해제된 상태로 저장
+            save_value(data);
+            selectedDate = null; // 이전에 선택된 날짜 초기화
+          }
+        }
+    });
+
+    calendar.render();
+});
+
+    // DB에 체크여부 값 저장
+    function save_value(data) {
+
+      let selected_date = data.date;
+      let selected_value = data.checked;
+
+      $.ajax({
+        url: "cal_checked",
+        type: "POST",
+        data: {
+          selected_date: selected_date,
+          selected_value: selected_value
+        },
+        success: function(result) {
+          window.location.reload(); // 페이지 새로고침
+        },
+        error: function(request, status, error) {
+          console.error(error);
+        }
+      });
+    }
+
+</script>
+
 </html>
