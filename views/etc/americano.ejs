@@ -107,6 +107,21 @@
             container.appendChild(dateDiv);
             container.appendChild(checkboxDiv);
 
+            /*
+            // 실패 체크박스 추가
+            var failureCheckboxDiv = document.createElement('div');
+            var failureCheckbox = document.createElement('input');
+            failureCheckbox.type = 'checkbox';
+            failureCheckbox.className = 'calendar-checkbox';
+            failureCheckbox.id = 'failure-checkbox-' + arg.dateStr;
+            var failureLabel = document.createElement('label');
+            failureLabel.htmlFor = failureCheckbox.id;
+            failureLabel.textContent = '실패';
+            failureCheckboxDiv.appendChild(failureCheckbox);
+            failureCheckboxDiv.appendChild(failureLabel);
+            container.appendChild(failureCheckboxDiv);
+            */
+
             return { html: container.innerHTML };
         },
         select: function(info) {
