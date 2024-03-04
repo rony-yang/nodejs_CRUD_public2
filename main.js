@@ -663,39 +663,40 @@ app.get('/ame', async (req, res) => {
 
 // 체크박스 체크하면 DB로 저장
 app.post('/cal_checked', async (req, res) => {
-  try {
+
     let selected_date = req.body.selected_date;
     let selected_value = req.body.selected_value;
 
     // 해당 날짜의 레코드가 있는지 확인
     let rows1 = await asyncQuery(`
-      SELECT check_date FROM nodejs_crud.calendar WHERE check_date = ?`, [selected_date]);
-      
-    // false로 변경하지않고 해당 날짜를 삭제
-    if (rows1.length > 0) {
-      let rows2 = await asyncQuery(`DELETE FROM nodejs_crud.calendar 
-        WHERE check_date = '${selected_date}'`);
+                                  SELECT check_date FROM nodejs_crud.calendar 
+                                  WHERE check_date = ?`, [selected_date]);
 
-      if (rows2.affectedRows != 0 && rows2.errno == undefined) {
-        res.send('ok');
-      } else {
-        res.send('fail');
-      }
-    } else {
-      // 값이 없으면 새로운 레코드를 삽입합니다.
-      let rows3 = await asyncQuery(`
-        INSERT INTO nodejs_crud.calendar (check_date, is_check) VALUES (?, ?)`, [selected_date, selected_value]);
+      // 기존 값이 있을 경우 체크값 업데이트하기
+      if(rows1.length > 0) {
+        let rows2 = await asyncQuery(`
+                                      UPDATE nodejs_crud.calendar 
+                                      SET is_check = '${selected_value}' 
+                                      WHERE check_date ='${selected_date}'`);
 
-      if (rows3.affectedRows != 0 && rows3.errno == undefined) {
-        res.send('ok');
+        if (rows2.affectedRows != 0 && rows2.errno == undefined) {
+          res.send('ok');
+        } else {
+          res.send('fail');
+        }
+
+      // 기존 값이 없을 경우 새로 삽입
       } else {
-        res.send('fail');
+        let rows3 = await asyncQuery(`
+                                      INSERT INTO nodejs_crud.calendar (check_date, is_check) 
+                                      VALUES (?, ?)`, [selected_date, selected_value]);
+
+        if (rows3.affectedRows != 0 && rows3.errno == undefined) {
+          res.send('ok');
+        } else {
+          res.send('fail');
+        }
       }
-    }
-  } catch (error) {
-    console.error('데이터베이스에 데이터 저장 중 오류가 발생했습니다:', error);
-    res.status(500).send('내부 서버 오류');
-  }
 });
 
 
