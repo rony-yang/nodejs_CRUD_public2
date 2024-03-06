@@ -4,13 +4,13 @@ nodeJS 개인 프로젝트
 **1. 개발 목표** : CRUD를 사용한 페이지 구현
 
 **2. 메인 사진**
-![main2](https://github.com/rony-yang/nodejs_CRUD_public/assets/116271236/0e9e1e73-77a1-40c4-ba46-bb6fbcd4eaac)
+![로그인](https://github.com/rony-yang/nodejs_CRUD_public2/assets/116271236/e976894a-449c-4ef2-ad5e-3654d0cee8b1)
 
-![11](https://github.com/rony-yang/nodejs_CRUD_public/assets/116271236/786cce32-9f99-416d-b2c0-de85936445fd)
+![게시판](https://github.com/rony-yang/nodejs_CRUD_public2/assets/116271236/463f8f2f-27a0-4d5d-89d8-c9f2a9d838dc)
 
-**3. URL 주소** : https://nodejs-portfolio-tibli.run.goorm.site/
+**3. URL 주소** : 배포 예정중
 
-**4. 작업기간** : 2023. 6
+**4. 작업기간** : 2023. 8월, 2024. 2월 ~
 
 **5. 사용 기술**
 
@@ -33,6 +33,8 @@ nodeJS 개인 프로젝트
 - 매출현황표 : DB정보를 날짜별로 정렬하여 가져오고, 각 월별 및 전체 합계 기능
 
 - 거래처정보 : dataTable 기능을 사용하여 거래처 정보 출력 및 신규등록, 수정, 삭제 기능
+
+- 게시판 : 기존 글 상세보기, 로그인 시 글쓰기 및 수정, 삭제, 내 글 모아보기 기능 
 
 **7. Advanced Feature**
 
