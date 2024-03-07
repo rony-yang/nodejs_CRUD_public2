@@ -23,7 +23,8 @@
 
 /////////////////////////////////// 1. setting 시작 ///////////////////////////////////
 
-const PORT = 5157;
+// const PORT = 5157;
+const PORT = process.env.PORT || 5157;
 
 const express = require('express');
 const app = express();
