@@ -80,8 +80,10 @@ app.use(session({
 
 /////////////////////////////////// 2. DB 시작 ///////////////////////////////////
 
+/*
+// 기존 로컬 DB 연결 시 사용
 const mysql2 = require("mysql2/promise");
-const { pool } = require('./password.js');
+const { pool } = require('./password_render.js');
 
 async function _getConn() {
 	try {
@@ -107,6 +109,33 @@ async function asyncQuery(sql, params = []) {
   	}
 	return false;
 }
+*/
+
+// render DB 연결 시 사용
+const { connect, query } = require('./password_render.js'); // PostgreSQL 연결 함수 가져오기
+
+async function init() {
+  await connect(); // PostgreSQL 데이터베이스에 연결
+}
+
+async function asyncQuery(sql, params = []) {
+  try {
+    const rows = await query(sql, params); // PostgreSQL 데이터베이스에서 쿼리 실행
+    return rows;
+  } catch (error) {
+    console.error('쿼리 실행 중 오류 발생', error);
+    return [];
+  }
+}
+
+init(); // PostgreSQL 데이터베이스에 연결 초기화
+
+module.exports = {
+  asyncQuery
+};
+
+
+
 
 const fs = require('fs');
 // 구글 캘린더 OAuth

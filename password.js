@@ -1,3 +1,4 @@
+// 기존 로컬 DB 연결
 const mysql2 = require("mysql2/promise");
 const _pool = mysql2.createPool({
 	host: "localhost",
@@ -12,3 +13,6 @@ const _pool = mysql2.createPool({
 module.exports = {
 	pool: _pool
 };
+
+
+
