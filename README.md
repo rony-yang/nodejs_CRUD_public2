@@ -8,7 +8,7 @@ nodeJS 개인 프로젝트
 
 ![게시판](https://github.com/rony-yang/nodejs_CRUD_public2/assets/116271236/463f8f2f-27a0-4d5d-89d8-c9f2a9d838dc)
 
-**3. URL 주소** : 배포 예정중
+**3. URL 주소** : https://nodejs-crud-public2.onrender.com/
 
 **4. 작업기간** : 2023. 8월, 2024. 2월 ~
 
