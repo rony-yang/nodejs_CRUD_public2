@@ -118,16 +118,6 @@ async function init() {
   await connect(); // PostgreSQL 데이터베이스에 연결
 }
 
-async function asyncQuery(sql, params = []) {
-  try {
-    const rows = await query(sql, params); // PostgreSQL 데이터베이스에서 쿼리 실행
-    return rows;
-  } catch (error) {
-    console.error('쿼리 실행 중 오류 발생', error);
-    return [];
-  }
-}
-
 init(); // PostgreSQL 데이터베이스에 연결 초기화
 
 module.exports = {
