@@ -81,9 +81,9 @@ app.use(session({
 /////////////////////////////////// 2. DB 시작 ///////////////////////////////////
 
 /*
-// 기존 로컬 DB 연결 시 사용
+/////////////////////// 기존 로컬 DB 연결 시 사용 ///////////////////////
 const mysql2 = require("mysql2/promise");
-const { pool } = require('./password_render.js');
+const { pool } = require('./password_local.js');
 
 async function _getConn() {
 	try {
@@ -111,21 +111,26 @@ async function asyncQuery(sql, params = []) {
 }
 */
 
-// render DB 연결 시 사용
-const { connect, query } = require('./password_render.js'); // PostgreSQL 연결 함수 가져오기
 
-async function init() {
-  await connect(); // PostgreSQL 데이터베이스에 연결
+/////////////////////// render DB 연결 시 사용 ///////////////////////
+const { pool } = require('./password_render.js');
+
+
+async function asyncQuery(sql, params = []) {
+  try {
+    const client = await pool.connect(); // 풀에서 클라이언트 가져오기
+    const { rows } = await client.query(sql, params); // 쿼리 실행
+    client.release(); // 클라이언트를 풀에 반환
+    return rows; // 결과 반환
+  } catch (err) {
+    console.error(`!! asyncQuery 에러 \n::${err}\n[sql]::${sql}\n[파라미터]::${params}`);
+    return false;
+  }
 }
 
-init(); // PostgreSQL 데이터베이스에 연결 초기화
 
-module.exports = {
-  asyncQuery
-};
-
-
-
+// const inputDB = 'nodejs_crud'; // 로컬 DB
+const inputDB = 'public'; // render DB
 
 const fs = require('fs');
 // 구글 캘린더 OAuth
@@ -171,10 +176,8 @@ app.get('/register', async (req, res) => {
 // 회원가입 시 아이디 중복확인
 app.post("/id_duplicate", async (req, res, err) => {
   let userID = req.body.userID
-  let rows = await asyncQuery(`SELECT * 
-               FROM nodejs_crud.members 
-               WHERE userID='${userID}'
-              `);
+
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.members WHERE userID='${userID}'`);
   if (rows != '') {
       res.send("fail");
   } else {
@@ -197,29 +200,10 @@ app.post('/register', async (req, res, err) => {
 	let address		    	= req.body.address;
 	let number 		    	= req.body.number;
 	let email 		    	= req.body.email;
-	
-	let rows = await asyncQuery(`INSERT INTO nodejs_crud.members 
-									(
-										userID, 
-										password, 
-										name, 
-										birth,
-										zipcode,
-										address, 
-										number, 
-										email
-									)
-										VALUES (?,?,?,?,?,?,?,?)`, 
-									[
-										userID,
-										password_bcrypt,
-										name,
-										birth,
-										zipcode,
-										address,
-										number,
-										email
-									]);
+
+  let rows = await asyncQuery(`INSERT INTO ${inputDB}.members 
+									(userID, password, name, birth, zipcode, address, number, email) VALUES (?,?,?,?,?,?,?,?)`, 
+									[userID, password_bcrypt,	name,	birth, zipcode, address, number, email]);
 
 	if (rows.affectedRows != 0 && rows.errno == undefined) {
 	  res.send('ok');
@@ -240,10 +224,8 @@ app.post("/loginaction", async (req, res, err) => {
   let userID		= req.body.userID;
   let password	= req.body.password;
 
-  let rows = await asyncQuery(`SELECT * 
-               FROM nodejs_crud.members 
-               WHERE userID = '${userID}'
-              `);
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.members WHERE userID = '${userID}'`);
+
   // 값이 존재하지 않을 경우
   if (rows == null || rows == undefined || rows == '') {
       res.end("fail");
@@ -313,7 +295,7 @@ app.post("/logoutaction", async (req, res, err) => {
 // 거래처정보
 app.get('/customerInfo', async (req, res) => {
 	let rows = await asyncQuery(`SELECT * 
-								 FROM nodejs_crud.customerInfo
+								 FROM ${inputDB}.customerInfo
 								`);
 
 	if (!req.session.user || req.session.user === undefined) {
@@ -327,7 +309,7 @@ app.get('/customerInfo', async (req, res) => {
 // 거래처정보 테이블
 app.post('/customerInfo_get', async (req, res) => {
   let rows = await asyncQuery(`SELECT * 
-               FROM nodejs_crud.customerInfo
+               FROM ${inputDB}.customerInfo
               `);
 res.json(rows);
 });
@@ -336,7 +318,7 @@ res.json(rows);
 app.post('/customer_detail', async (req, res) => {
   let check_No = req.body.No;
   let rows = await asyncQuery(`SELECT * 
-               FROM nodejs_crud.customerInfo 
+               FROM ${inputDB}.customerInfo 
                WHERE No = '${check_No}'
               `);
   if (rows.affectedRows != 0 && rows.errno == undefined) {
@@ -362,7 +344,7 @@ let callNum					        	= req.body.callNum;
 let personInCharge		    		= req.body.personInCharge;
 let memo						          = req.body.memo;
 
-  let rows = await asyncQuery(`INSERT INTO nodejs_crud.customerInfo 
+  let rows = await asyncQuery(`INSERT INTO ${inputDB}.customerInfo 
                 (
                  registrationNum, 
                  name,
@@ -419,7 +401,7 @@ let personInCharge	    			= req.body.personInCharge;
 let memo					          	= req.body.memo;
 let No						          	= req.body.No;
 
-let rows = await asyncQuery(`UPDATE nodejs_crud.customerInfo 
+let rows = await asyncQuery(`UPDATE ${inputDB}.customerInfo 
               SET registrationNum = '${registrationNum}',
                 name = '${name}',
                 representative = '${representative}',
@@ -448,7 +430,7 @@ if (rows.affectedRows != 0 && rows.errno == undefined) {
 // 체크항목 다중 삭제하기
 app.post('/customer_delete', async (req, res) => {
 let check_No = JSON.parse(req.body.No);
-let rows = await asyncQuery(`DELETE FROM nodejs_crud.customerInfo
+let rows = await asyncQuery(`DELETE FROM ${inputDB}.customerInfo
                WHERE No 
                IN (${check_No.map(value => `'${value}'`).join(',')})
               `);
@@ -478,14 +460,14 @@ app.get('/summarySheet', async (req, res) => {
 								SELECT id, 
 									   date, 
 									   money 
-								FROM nodejs_crud.ledger 
+								FROM ${inputDB}.ledger 
 								WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
 								ORDER BY date
 								`);
 	let monthly_total = await asyncQuery(`
 										SELECT MONTH(date) AS month, 
 											   SUM(money) AS total
-										FROM nodejs_crud.ledger
+										FROM ${inputDB}.ledger
 										WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
 										GROUP BY month
 										ORDER BY MIN(date)
@@ -506,7 +488,7 @@ app.post('/viewBtnSearch', async (req, res) => {
 	let rows = await asyncQuery(`SELECT id, 
 									    date, 
 									    money 
-								 FROM nodejs_crud.ledger
+								 FROM ${inputDB}.ledger
 								 WHERE date BETWEEN '${beforeDate}' AND '${afterDate}'
 								 ORDER BY date
 								`);
@@ -529,16 +511,14 @@ app.get('/board', async (req, res) => {
 
 // 거래처정보 테이블
 app.post('/board_get', async (req, res) => {
-  let rows = await asyncQuery(`SELECT * 
-               FROM nodejs_crud.board
-              `);
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.board`);
   res.json(rows);
 });
 
 // 상세페이지 이동 : 예) board_detailed_page?board_no=1
 app.get('/board_detailed_page', async function(req, res) {
   let board_no = req.query.board_no;
-  let rows = await asyncQuery(`SELECT * FROM nodejs_crud.board 
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.board 
                                 WHERE board_no = '${board_no}'`);
   if (rows.length > 0) {
     let board_title = rows[0].board_title;
@@ -563,7 +543,7 @@ app.get('/board_detailed_page', async function(req, res) {
 app.get('/board_write', async (req, res) => {
   var today = new Date().toISOString().slice(0, 10);
   // 게시판 번호 최대값 가져와서 그 다음 숫자로 넣어주기
-  let rows = await asyncQuery(`SELECT MAX(board_no) as max_board_no FROM nodejs_crud.board`);
+  let rows = await asyncQuery(`SELECT MAX(board_no) as max_board_no FROM ${inputDB}.board`);
   let next_board_no;
   if (rows && rows.length > 0 && rows[0].max_board_no !== null) {
     // 다음 board_no 값 계산
@@ -589,7 +569,7 @@ app.post('/save_board', async (req, res) => {
   let board_title = req.body.board_title;
   let board_contents = req.body.board_contents;
 
-	let rows = await asyncQuery(`INSERT INTO nodejs_crud.board
+	let rows = await asyncQuery(`INSERT INTO ${inputDB}.board
 									(
 										board_no, 
 										board_user, 
@@ -619,7 +599,7 @@ app.post('/edit_board', async (req, res) => {
   let board_title = req.body.board_title;
   let board_contents = req.body.board_contents;
 
-	let rows = await asyncQuery(`UPDATE nodejs_crud.board
+	let rows = await asyncQuery(`UPDATE ${inputDB}.board
     SET board_title = '${board_title}',
     board_contents = '${board_contents}'
     WHERE board_no ='${board_no}'
@@ -636,7 +616,7 @@ app.post('/edit_board', async (req, res) => {
 app.post('/delete_board', async (req, res) => {
   let board_no = req.body.board_no;
 
-	let rows = await asyncQuery(`DELETE FROM nodejs_crud.board 
+	let rows = await asyncQuery(`DELETE FROM ${inputDB}.board 
     WHERE board_no = '${board_no}'
     `);
 
@@ -658,7 +638,7 @@ app.post('/board_get_my', async (req, res) => {
   try {
     // 현재 로그인한 사용자의 아이디를 기준으로 해당 사용자가 작성한 게시물을 데이터베이스에서 조회
     let rows = await asyncQuery(`SELECT * 
-                                FROM nodejs_crud.board
+                                FROM ${inputDB}.board
                                 WHERE board_user = ?`, [sessionID]);
     // 조회 결과를 JSON 형태로 응답
     res.json(rows);
@@ -677,7 +657,7 @@ app.post('/board_get_my', async (req, res) => {
 
 // 페이지 렌더링
 app.get('/ame', async (req, res) => {
-  let rows = await asyncQuery(`SELECT check_date, is_check FROM nodejs_crud.calendar`);
+  let rows = await asyncQuery(`SELECT check_date, is_check FROM ${inputDB}.calendar`);
   res.render('etc/americano', { rows:rows });
 });
 
@@ -689,13 +669,13 @@ app.post('/cal_checked', async (req, res) => {
 
     // 해당 날짜의 레코드가 있는지 확인
     let rows1 = await asyncQuery(`
-                                  SELECT check_date FROM nodejs_crud.calendar 
+                                  SELECT check_date FROM ${inputDB}.calendar 
                                   WHERE check_date = ?`, [selected_date]);
 
       // 기존 값이 있을 경우 체크값 업데이트하기
       if(rows1.length > 0) {
         let rows2 = await asyncQuery(`
-                                      UPDATE nodejs_crud.calendar 
+                                      UPDATE ${inputDB}.calendar 
                                       SET is_check = '${selected_value}' 
                                       WHERE check_date ='${selected_date}'`);
 
@@ -708,7 +688,7 @@ app.post('/cal_checked', async (req, res) => {
       // 기존 값이 없을 경우 새로 삽입
       } else {
         let rows3 = await asyncQuery(`
-                                      INSERT INTO nodejs_crud.calendar (check_date, is_check) 
+                                      INSERT INTO ${inputDB}.calendar (check_date, is_check) 
                                       VALUES (?, ?)`, [selected_date, selected_value]);
 
         if (rows3.affectedRows != 0 && rows3.errno == undefined) {
