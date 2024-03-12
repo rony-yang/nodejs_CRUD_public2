@@ -113,8 +113,7 @@ async function asyncQuery(sql, params = []) {
 
 
 /////////////////////// render DB 연결 시 사용 ///////////////////////
-// const { pool } = require('./password_render.js');
-const { pool } = require('/etc/secrets/key'); // 사이트의 secret files로 직접 찾을때
+const { pool } = require('./password_render.js');
 
 async function asyncQuery(sql, params = []) {
   try {
