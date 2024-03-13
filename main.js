@@ -113,7 +113,14 @@ async function asyncQuery(sql, params = []) {
 
 
 /////////////////////// render DB 연결 시 사용 ///////////////////////
-const { pool } = require('./password_render.js');
+// const { pool } = require('./password_render.js');
+const fs = require('fs');
+const { Pool } = require('pg');
+const connectionString = fs.readFileSync('/etc/secrets/password_render', 'utf8');
+
+const pool = new Pool({
+  connectionString: connectionString,
+});
 
 async function asyncQuery(sql, params = []) {
   try {
@@ -131,7 +138,7 @@ async function asyncQuery(sql, params = []) {
 // const inputDB = 'nodejs_crud'; // 로컬 DB
 const inputDB = 'public'; // render DB
 
-const fs = require('fs');
+
 // 구글 캘린더 OAuth
 const credentials = JSON.parse(fs.readFileSync('views/etc/credentials.json', 'utf8'));
 
