@@ -113,15 +113,15 @@ async function asyncQuery(sql, params = []) {
 
 
 /////////////////////// render DB 연결 시 사용 ///////////////////////
-const { pool } = require('./password_render.js');
+// const { pool } = require('./password_render.js');
 
 // render 사이트의 secret files을 사용하여 접속
 const fs = require('fs');
-// const { Pool } = require('pg');
-// const connectionString = fs.readFileSync('/etc/secrets/password_render', 'utf8');
-// const pool = new Pool({
-//   connectionString: connectionString,
-// });
+const { Pool } = require('pg');
+const connectionString = fs.readFileSync('/etc/secrets/password_render', 'utf8');
+const pool = new Pool({
+  connectionString: connectionString,
+});
 
 
 async function asyncQuery(sql, params = []) {
