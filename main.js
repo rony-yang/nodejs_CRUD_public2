@@ -445,13 +445,24 @@ app.get('/summarySheet', async (req, res) => {
 								WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
 								ORDER BY date
 								`);
+  // mysql
+	// let monthly_total = await asyncQuery(`
+	// 									SELECT MONTH(date) AS month, 
+	// 										   SUM(money) AS total
+	// 									FROM ${inputDB}.ledger
+	// 									WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
+	// 									GROUP BY month
+	// 									ORDER BY MIN(date)
+	// `);
+
+  // postgresql
 	let monthly_total = await asyncQuery(`
-										SELECT MONTH(date) AS month, 
-											   SUM(money) AS total
-										FROM ${inputDB}.ledger
-										WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
-										GROUP BY month
-										ORDER BY MIN(date)
+    SELECT EXTRACT(month FROM date) AS month,
+    SUM(money) AS total
+    FROM ${inputDB}.ledger
+    WHERE date BETWEEN '${oneMonthAgoStr}' AND '${today}'
+    GROUP BY EXTRACT(month FROM date)
+    ORDER BY MIN(date);
 	`);
 	
 	if (!req.session.user || req.session.user === undefined) {
