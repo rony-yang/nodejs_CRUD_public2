@@ -208,10 +208,16 @@ app.post('/register', async (req, res, err) => {
 	let number 		    	= req.body.number;
 	let email 		    	= req.body.email;
 
+// mysql
+  // let rows = await asyncQuery(`INSERT INTO ${inputDB}.members 
+	// 								(userID, password, name, birth, zipcode, address, number, email) VALUES (?,?,?,?,?,?,?,?)`, 
+	// 								[userID, password_bcrypt,	name,	birth, zipcode, address, number, email]);
 
-  let rows = await asyncQuery(`INSERT INTO ${inputDB}.members 
-									(userID, password, name, birth, zipcode, address, number, email) VALUES (?,?,?,?,?,?,?,?)`, 
-									[userID, password_bcrypt,	name,	birth, zipcode, address, number, email]);
+// postgresql
+let rows = await asyncQuery(`INSERT INTO ${inputDB}.members 
+                                ("userID", "password", "name", "birth", "zipcode", "address", "number", "email") 
+                                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, 
+                                [userID, password_bcrypt, name, birth, zipcode, address, number, email]);
 
 	if (rows.affectedRows != 0 && rows.errno == undefined) {
 	  res.send('ok');
