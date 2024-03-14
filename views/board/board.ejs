@@ -175,7 +175,7 @@
 				<!-- Header -->
 					<header id="header">
 						<hr>
-						<h1 class="register_head_style">게시판2</h1>
+						<h1 class="register_head_style">게시판</h1>
 						<br>
 					</header>
 
@@ -222,7 +222,6 @@
         data: {},
         dataType: "json",
         success: function(result) {
-					console.log('게시판 구성 성공');
           $('#board_dataTable').DataTable({
             data			    : result, 			    // 데이터값
             responsive		: true, 			      // 반응형 설정

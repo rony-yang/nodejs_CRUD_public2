@@ -183,7 +183,8 @@ app.get('/register', async (req, res) => {
 app.post("/id_duplicate", async (req, res, err) => {
   let userID = req.body.userID
 
-  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.members WHERE userID='${userID}'`);
+  // let rows = await asyncQuery(`SELECT * FROM ${inputDB}.members WHERE userID='${userID}'`); // mysql
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.members WHERE "userID"='${userID}'`); // postgresql
   if (rows != '') {
       res.send("fail");
   } else {
@@ -206,6 +207,7 @@ app.post('/register', async (req, res, err) => {
 	let address		    	= req.body.address;
 	let number 		    	= req.body.number;
 	let email 		    	= req.body.email;
+
 
   let rows = await asyncQuery(`INSERT INTO ${inputDB}.members 
 									(userID, password, name, birth, zipcode, address, number, email) VALUES (?,?,?,?,?,?,?,?)`, 
@@ -230,7 +232,8 @@ app.post("/loginaction", async (req, res, err) => {
   let userID		= req.body.userID;
   let password	= req.body.password;
 
-  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.members WHERE userID = '${userID}'`);
+  // let rows = await asyncQuery(`SELECT * FROM ${inputDB}.members WHERE userID = '${userID}'`); // mysql
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.members WHERE "userID" = '${userID}'`); // postgresql
 
   // 값이 존재하지 않을 경우
   if (rows == null || rows == undefined || rows == '') {
@@ -300,9 +303,7 @@ app.post("/logoutaction", async (req, res, err) => {
 
 // 거래처정보
 app.get('/customerInfo', async (req, res) => {
-	let rows = await asyncQuery(`SELECT * 
-								 FROM ${inputDB}.customerInfo
-								`);
+	let rows = await asyncQuery(`SELECT * FROM ${inputDB}.customerInfo`);
 
 	if (!req.session.user || req.session.user === undefined) {
         res.render('customerInfo', {rows: rows});
@@ -314,19 +315,15 @@ app.get('/customerInfo', async (req, res) => {
 
 // 거래처정보 테이블
 app.post('/customerInfo_get', async (req, res) => {
-  let rows = await asyncQuery(`SELECT * 
-               FROM ${inputDB}.customerInfo
-              `);
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.customerInfo`);
 res.json(rows);
 });
 
 // 정보 상세보기
 app.post('/customer_detail', async (req, res) => {
   let check_No = req.body.No;
-  let rows = await asyncQuery(`SELECT * 
-               FROM ${inputDB}.customerInfo 
-               WHERE No = '${check_No}'
-              `);
+  // let rows = await asyncQuery(`SELECT * FROM ${inputDB}.customerInfo WHERE No = '${check_No}'`); // mysql
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.customerInfo WHERE "No" = '${check_No}'`); // postgresql
   if (rows.affectedRows != 0 && rows.errno == undefined) {
   res.send(rows);
 } else {
@@ -350,37 +347,11 @@ let callNum					        	= req.body.callNum;
 let personInCharge		    		= req.body.personInCharge;
 let memo						          = req.body.memo;
 
-  let rows = await asyncQuery(`INSERT INTO ${inputDB}.customerInfo 
-                (
-                 registrationNum, 
-                 name,
-                 representative,
-                 date,
-                 corporateRegistrationNum,
-                 location,
-                 locationOfHeadOffice,
-                 typeOfBusiness,
-                 item,
-                 email,
-                 callNum,
-                 personInCharge,
-                 memo
-                 )
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,[
-                 registrationNum, 
-                 name,
-                 representative,
-                 date,
-                 corporateRegistrationNum,
-                 location,
-                 locationOfHeadOffice,
-                 typeOfBusiness,
-                 item,
-                 email,
-                 callNum,
-                 personInCharge,
-                 memo
-              ]);
+let rows = await asyncQuery(`INSERT INTO ${inputDB}.customerInfo 
+  (registrationNum, name, representative, date, corporateRegistrationNum, location, locationOfHeadOffice, typeOfBusiness, item, email, callNum, personInCharge, memo)             
+  VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,[
+  registrationNum, name, representative, date, corporateRegistrationNum, location, locationOfHeadOffice, typeOfBusiness, item, email, callNum, personInCharge, memo]);
+              
 if (rows.affectedRows != 0 && rows.errno == undefined) {
   res.send('ok');
   console.log("거래처 정보 등록완료");
@@ -436,10 +407,8 @@ if (rows.affectedRows != 0 && rows.errno == undefined) {
 // 체크항목 다중 삭제하기
 app.post('/customer_delete', async (req, res) => {
 let check_No = JSON.parse(req.body.No);
-let rows = await asyncQuery(`DELETE FROM ${inputDB}.customerInfo
-               WHERE No 
-               IN (${check_No.map(value => `'${value}'`).join(',')})
-              `);
+// let rows = await asyncQuery(`DELETE FROM ${inputDB}.customerInfo WHERE No IN (${check_No.map(value => `'${value}'`).join(',')})`); // mysql
+let rows = await asyncQuery(`DELETE FROM ${inputDB}.customerInfo WHERE "No" IN (${check_No.map(value => `'${value}'`).join(',')})`); // postgresql
 
 if (rows.affectedRows != 0 && rows.errno == undefined) {
   res.send('ok');
@@ -524,8 +493,8 @@ app.post('/board_get', async (req, res) => {
 // 상세페이지 이동 : 예) board_detailed_page?board_no=1
 app.get('/board_detailed_page', async function(req, res) {
   let board_no = req.query.board_no;
-  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.board 
-                                WHERE board_no = '${board_no}'`);
+  let rows = await asyncQuery(`SELECT * FROM ${inputDB}.board WHERE board_no = '${board_no}'`);
+
   if (rows.length > 0) {
     let board_title = rows[0].board_title;
     let board_user  = rows[0].board_user;
