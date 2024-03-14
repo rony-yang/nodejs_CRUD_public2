@@ -674,7 +674,8 @@
 			$('#detail_registrationNum').val(data.registrationNum);
 			$('#detail_name').val(data.name);
 			$('#detail_representative').val(data.representative);
-			$('#detail_date').val(data.date);
+			let format_date = new Date(data.date).toISOString().split('T')[0];
+			$('#detail_date').val(format_date);
 			$('#detail_corporateRegistrationNum').val(data.corporateRegistrationNum);
 			$('#detail_location').val(data.location);
 			$('#detail_locationOfHeadOffice').val(data.locationOfHeadOffice);

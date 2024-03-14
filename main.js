@@ -113,14 +113,16 @@ async function asyncQuery(sql, params = []) {
 
 
 /////////////////////// render DB 연결 시 사용 ///////////////////////
-// const { pool } = require('./password_render.js');
-const fs = require('fs');
-const { Pool } = require('pg');
-const connectionString = fs.readFileSync('/etc/secrets/password_render', 'utf8');
+const { pool } = require('./password_render.js');
 
-const pool = new Pool({
-  connectionString: connectionString,
-});
+// render 사이트의 secret files을 사용하여 접속
+const fs = require('fs');
+// const { Pool } = require('pg');
+// const connectionString = fs.readFileSync('/etc/secrets/password_render', 'utf8');
+// const pool = new Pool({
+//   connectionString: connectionString,
+// });
+
 
 async function asyncQuery(sql, params = []) {
   try {
@@ -353,9 +355,16 @@ let callNum					        	= req.body.callNum;
 let personInCharge		    		= req.body.personInCharge;
 let memo						          = req.body.memo;
 
+// mysql
+// let rows = await asyncQuery(`INSERT INTO ${inputDB}.customerInfo 
+//   (registrationNum, name, representative, date, corporateRegistrationNum, location, locationOfHeadOffice, typeOfBusiness, item, email, callNum, personInCharge, memo)             
+//   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,[
+//   registrationNum, name, representative, date, corporateRegistrationNum, location, locationOfHeadOffice, typeOfBusiness, item, email, callNum, personInCharge, memo]);
+
+// postgresql
 let rows = await asyncQuery(`INSERT INTO ${inputDB}.customerInfo 
-  (registrationNum, name, representative, date, corporateRegistrationNum, location, locationOfHeadOffice, typeOfBusiness, item, email, callNum, personInCharge, memo)             
-  VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,[
+  ("registrationNum", "name", "representative", "date", "corporateRegistrationNum", "location", "locationOfHeadOffice", "typeOfBusiness", "item", "email", "callNum", "personInCharge", "memo")             
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,[
   registrationNum, name, representative, date, corporateRegistrationNum, location, locationOfHeadOffice, typeOfBusiness, item, email, callNum, personInCharge, memo]);
               
 if (rows.affectedRows != 0 && rows.errno == undefined) {
@@ -384,22 +393,42 @@ let personInCharge	    			= req.body.personInCharge;
 let memo					          	= req.body.memo;
 let No						          	= req.body.No;
 
+// mysql
+// let rows = await asyncQuery(`UPDATE ${inputDB}.customerInfo 
+//               SET registrationNum = '${registrationNum}',
+//                 name = '${name}',
+//                 representative = '${representative}',
+//                 date = '${date}',
+//                 corporateRegistrationNum = '${corporateRegistrationNum}',
+//                 location = '${location}',
+//                 locationOfHeadOffice = '${locationOfHeadOffice}',
+//                 typeOfBusiness = '${typeOfBusiness}',
+//                 item = '${item}',
+//                 email = '${email}',
+//                 callNum = '${callNum}',
+//                 personInCharge = '${personInCharge}',
+//                 memo = '${memo}'
+//                 WHERE "no" ='${No}'
+//               `);
+
+// postgresql
 let rows = await asyncQuery(`UPDATE ${inputDB}.customerInfo 
-              SET registrationNum = '${registrationNum}',
-                name = '${name}',
-                representative = '${representative}',
-                date = '${date}',
-                corporateRegistrationNum = '${corporateRegistrationNum}',
-                location = '${location}',
-                locationOfHeadOffice = '${locationOfHeadOffice}',
-                typeOfBusiness = '${typeOfBusiness}',
-                item = '${item}',
-                email = '${email}',
-                callNum = '${callNum}',
-                personInCharge = '${personInCharge}',
-                memo = '${memo}'
-                WHERE no ='${No}'
+              SET "registrationNum" = '${registrationNum}',
+                "name" = '${name}',
+                "representative" = '${representative}',
+                "date" = '${date}',
+                "corporateRegistrationNum" = '${corporateRegistrationNum}',
+                "location" = '${location}',
+                "locationOfHeadOffice" = '${locationOfHeadOffice}',
+                "typeOfBusiness" = '${typeOfBusiness}',
+                "item" = '${item}',
+                "email" = '${email}',
+                "callNum" = '${callNum}',
+                "personInCharge" = '${personInCharge}',
+                "memo" = '${memo}'
+                WHERE "No" ='${No}'
               `);
+
 
 if (rows.affectedRows != 0 && rows.errno == undefined) {
   res.send('ok');
@@ -561,22 +590,15 @@ app.post('/save_board', async (req, res) => {
   let board_title = req.body.board_title;
   let board_contents = req.body.board_contents;
 
+  // mysql
+	// let rows = await asyncQuery(`INSERT INTO ${inputDB}.board
+	// 								(board_no, board_user, board_date, board_title, board_contents) VALUES (?,?,?,?,?)`, 
+	// 								[board_no,	board_user, board_date, board_title, board_contents]);
+
+  // postgresql
 	let rows = await asyncQuery(`INSERT INTO ${inputDB}.board
-									(
-										board_no, 
-										board_user, 
-										board_date, 
-										board_title,
-										board_contents
-									)
-										VALUES (?,?,?,?,?)`, 
-									[
-										board_no,
-										board_user,
-										board_date,
-										board_title,
-                    board_contents
-									]);
+									("board_no", "board_user", "board_date", "board_title", "board_contents") VALUES ($1, $2, $3, $4, $5)`, 
+									[board_no,	board_user, board_date, board_title, board_contents]);
 
 	if (rows.affectedRows != 0 && rows.errno == undefined) {
 	  res.send('ok');
@@ -629,9 +651,8 @@ app.post('/board_get_my', async (req, res) => {
 
   try {
     // 현재 로그인한 사용자의 아이디를 기준으로 해당 사용자가 작성한 게시물을 데이터베이스에서 조회
-    let rows = await asyncQuery(`SELECT * 
-                                FROM ${inputDB}.board
-                                WHERE board_user = ?`, [sessionID]);
+    // let rows = await asyncQuery(`SELECT * FROM ${inputDB}.board WHERE board_user = ?`, [sessionID]); // mysql
+    let rows = await asyncQuery(`SELECT * FROM ${inputDB}.board WHERE board_user = $1`, [sessionID]); // postgresql
     // 조회 결과를 JSON 형태로 응답
     res.json(rows);
   } catch (error) {
